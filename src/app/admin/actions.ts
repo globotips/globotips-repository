@@ -62,10 +62,7 @@ export async function removeEmployeeAction(formData: FormData) {
   revalidatePath("/admin");
 }
 
-export async function recordDemoTipAction(formData: FormData) {
-  const code = String(formData.get("code") ?? "").trim();
-  const amountRaw = String(formData.get("amountCents") ?? "");
-  const amountCents = Number.parseInt(amountRaw, 10);
+export async function recordDemoTipAction(code: string, amountCents: number) {
   if (!code || !Number.isInteger(amountCents) || amountCents < 100) {
     return { ok: false as const, error: "Choose a tip of at least $1." };
   }

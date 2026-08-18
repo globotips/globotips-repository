@@ -28,15 +28,14 @@ export function TipCheckout({ code, name }: { code: string; name: string }) {
     setStep("pay");
   }
 
-  async function submitDemoPay(formData: FormData) {
+  async function submitDemoPay() {
     if (!amountCents) {
+      setError("Choose a tip of at least $1.");
       return;
     }
     setPending(true);
     setError(null);
-    formData.set("code", code);
-    formData.set("amountCents", String(amountCents));
-    const result = await recordDemoTipAction(formData);
+    const result = await recordDemoTipAction(code, amountCents);
     setPending(false);
     if (!result.ok) {
       setError(result.error);
@@ -75,7 +74,13 @@ export function TipCheckout({ code, name }: { code: string; name: string }) {
 
   if (step === "pay" && amountCents) {
     return (
-      <form action={submitDemoPay} className="mt-8 space-y-4">
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          void submitDemoPay();
+        }}
+        className="mt-8 space-y-4"
+      >
         <div className="rounded-2xl border border-gold/50 bg-gold/15 px-4 py-3 text-sm">
           <strong>Demo checkout.</strong> Fill in the fields to see the pay
           step. Nothing is charged.
