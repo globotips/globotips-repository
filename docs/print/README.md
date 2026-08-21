@@ -16,13 +16,15 @@ npm run print:kit
    Laminate. Set them on a nightstand or checkout desk where cash tips are left. Each QR opens that person’s tip URL on globotips.com.
 3. **Blank 5 × 7 template** — shows Name / Photo / QR placeholders.  
    Use this to make the point: one person, one QR. Not a hotel-wide code.
-4. **Optional** — 4 × 6 cards, 7 × 10 table tents (two 5 × 7 faces), Dariusz business card.
+4. **Dariusz business card** — `public/print/business-card.pdf` (front + back, 0.125 in bleed) and `public/print/business-card-10up-letter.pdf` (10-up on letter).
+5. **Optional** — 4 × 6 cards and 7 × 10 table tents (two 5 × 7 faces).
 
 ## Print notes
 
 - Desk cards: print **actual size**, color, on white cardstock. Trim if the printer adds a letter sheet. Laminate.
 - Table tents: print the 7 × 10 PDF, fold on the green hairline, stand it up.
 - One-pager: letter, color, single-sided.
+- Business card: trim 3.5 × 2 in. The single-card PDF is 3.75 × 2.25 in (0.125 in bleed). Keep type inside the safe margin. 10-up is trim size on letter with crop marks; duplex flip on the long edge.
 - Colors are only Globo navy `#00214D`, Tips green `#00A878`, and white.
 
 ## Locked facts on the pieces

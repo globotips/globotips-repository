@@ -69,7 +69,11 @@ export default function PrintKitPage() {
               The blank template, so it is clear each new staff member gets their
               own card and QR.
             </li>
-            <li>Optional: the business card and table-tent PDFs.</li>
+            <li>
+              Dariusz business cards — single card with bleed, plus a letter
+              10-up sheet for a print shop.
+            </li>
+            <li>Optional: table-tent PDFs.</li>
           </ol>
         </section>
 
@@ -159,17 +163,41 @@ export default function PrintKitPage() {
             Business card
           </h2>
           <p className="mt-3 max-w-xl text-navy/70">
-            3.5 × 2 in. Dariusz Dudkiewicz, 973-271-4228,
-            woboe1962@gmail.com.
+            US 3.5 × 2 in with 0.125 in bleed (page is 3.75 × 2.25). Front is
+            Dariusz Dudkiewicz, co-founder. Back has a QR to globotips.com.
+            Print the 10-up letter sheet at a shop, duplex flip on the long
+            edge, then cut on the marks.
           </p>
-          <div className="mt-6">
-            <a
-              href="/print/business-card.pdf"
-              className="font-medium text-navy hover:text-brand"
-            >
-              Download business card
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            <a href="/print/business-card.pdf">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/print/business-card-front.png"
+                alt="Business card front"
+                className="w-full border border-navy/10"
+              />
+            </a>
+            <a href="/print/business-card.pdf">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/print/business-card-back.png"
+                alt="Business card back"
+                className="w-full border border-navy/10"
+              />
             </a>
           </div>
+          <ul className="mt-6 space-y-2 text-sm">
+            <li>
+              <a href="/print/business-card.pdf" className="font-medium text-navy hover:text-brand">
+                Single card, front and back, with bleed
+              </a>
+            </li>
+            <li>
+              <a href="/print/business-card-10up-letter.pdf" className="font-medium text-navy hover:text-brand">
+                Letter 10-up sheet
+              </a>
+            </li>
+          </ul>
         </section>
       </main>
 

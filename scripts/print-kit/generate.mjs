@@ -464,37 +464,138 @@ function sharedCss(fontCss) {
     }
 
     .biz {
+      width: 3.75in;
+      height: 2.25in;
+      background: ${WHITE};
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .biz-trim {
       width: 3.5in;
       height: 2in;
-      background: ${WHITE};
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      box-shadow: inset 0.12in 0 0 0 ${NAVY};
     }
-    .biz .band { height: 0.12in; }
+    .biz .bleed-band {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 0.28in;
+      background: ${GREEN};
+    }
+    .biz .bleed-rail {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 0.28in;
+      background: ${NAVY};
+    }
     .biz-body {
+      position: relative;
       flex: 1;
-      padding: 0.14in 0.18in 0.14in 0.28in;
+      padding: 0.34in 0.28in 0.26in 0.42in;
       display: flex;
       flex-direction: column;
     }
-    .biz .wordmark { font-size: 18px; }
+    .biz-trim .bleed-band { height: 0.16in; }
+    .biz-trim .bleed-rail { width: 0.14in; }
+    .biz-trim .biz-body { padding: 0.22in 0.16in 0.14in 0.28in; }
+    .biz .wordmark { font-size: 20px; }
+    .biz-trim .wordmark { font-size: 18px; }
     .biz h1 {
       margin-top: auto;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 700;
       letter-spacing: -0.02em;
     }
-    .biz p {
+    .biz .role {
       font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: ${GREEN};
+      margin-top: 0.03in;
+    }
+    .biz .phone {
+      margin-top: 0.08in;
+      font-size: 11px;
       font-weight: 500;
-      line-height: 1.45;
     }
     .biz .site {
-      margin-top: 0.02in;
+      font-size: 12px;
       font-weight: 700;
       color: ${GREEN};
+    }
+    .biz-back .biz-body {
+      flex-direction: row;
+      align-items: center;
+      gap: 0.16in;
+    }
+    .biz-qr {
+      width: 1.05in;
+      height: 1.05in;
+      display: block;
+      flex: 0 0 auto;
+      background: ${WHITE};
+    }
+    .biz-trim .biz-qr { width: 0.95in; height: 0.95in; }
+    .biz-back .back-copy {
+      min-width: 0;
+    }
+    .biz-back .line {
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.3;
+      letter-spacing: -0.015em;
+    }
+    .biz-back .site {
+      margin-top: 0.1in;
+      display: block;
+    }
+    .sheet {
+      width: 8.5in;
+      height: 11in;
+      background: ${WHITE};
+      position: relative;
+    }
+    .sheet-grid {
+      position: absolute;
+      top: 0.5in;
+      left: 0.75in;
+      width: 7in;
+      height: 10in;
+      display: grid;
+      grid-template-columns: 3.5in 3.5in;
+      grid-template-rows: repeat(5, 2in);
+    }
+    .sheet-grid.mirror {
+      direction: rtl;
+    }
+    .sheet-grid.mirror > * { direction: ltr; }
+    .sheet .marks {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .sheet .mark {
+      position: absolute;
+      background: ${NAVY};
+    }
+    .sheet .hint {
+      position: absolute;
+      top: 0.18in;
+      left: 0.75in;
+      font-size: 8px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: ${NAVY};
+    }
+    .sheet .hint-right {
+      left: auto;
+      right: 0.75in;
     }
   `;
 }
@@ -507,7 +608,9 @@ function pageWrap(css, pageSize, body) {
   <style>
     ${css}
     @page { size: ${pageSize}; margin: 0; }
-    html, body { width: ${pageSize.split(" ")[0]}; height: ${pageSize.split(" ")[1]}; }
+    html, body { width: ${pageSize.split(" ")[0]}; }
+    .print-page { page-break-after: always; break-after: page; }
+    .print-page:last-child { page-break-after: auto; break-after: auto; }
   </style>
 </head>
 <body>${body}</body>
@@ -592,20 +695,79 @@ function onePagerHtml(css) {
   );
 }
 
-function businessCardHtml(css) {
+function businessCardFace(side, siteQr, { trim = false, paged = true } = {}) {
+  const sizeClass = `${trim ? " biz-trim" : ""}${paged ? " print-page" : ""}`;
+  if (side === "back") {
+    return `<article class="biz biz-back${sizeClass}">
+      <div class="bleed-band"></div>
+      <div class="bleed-rail"></div>
+      <div class="biz-body">
+        <img class="biz-qr" src="${siteQr}" alt="QR code for globotips.com" />
+        <div class="back-copy">
+          ${logoLockup(trim ? 22 : 24)}
+          <p class="line">Cashless tips for hotel staff, tour guides, and cruise staff.</p>
+          <span class="site">globotips.com</span>
+        </div>
+      </div>
+    </article>`;
+  }
+  return `<article class="print-page biz${sizeClass}">
+    <div class="bleed-band"></div>
+    <div class="bleed-rail"></div>
+    <div class="biz-body">
+      ${logoLockup(trim ? 28 : 32)}
+      <h1>Dariusz Dudkiewicz</h1>
+      <p class="role">Co-founder</p>
+      <p class="site">globotips.com</p>
+      <p class="phone">973-271-4228</p>
+    </div>
+  </article>`;
+}
+
+function cropMarks() {
+  const marks = [];
+  const xs = [0.75, 4.25, 7.75];
+  const ys = [0.5, 2.5, 4.5, 6.5, 8.5, 10.5];
+  for (const x of xs) {
+    for (const y of ys) {
+      marks.push(`<span class="mark" style="left:${x - 0.12}in;top:${y}in;width:0.1in;height:0.5pt"></span>`);
+      marks.push(`<span class="mark" style="left:${x + 0.02}in;top:${y}in;width:0.1in;height:0.5pt"></span>`);
+      marks.push(`<span class="mark" style="top:${y - 0.12}in;left:${x}in;height:0.1in;width:0.5pt"></span>`);
+      marks.push(`<span class="mark" style="top:${y + 0.02}in;left:${x}in;height:0.1in;width:0.5pt"></span>`);
+    }
+  }
+  return marks.join("");
+}
+
+function businessCardHtml(css, siteQr) {
   return pageWrap(
     css,
-    "3.5in 2in",
-    `<article class="biz">
-      <div class="band"></div>
-      <div class="biz-body">
-        ${logoLockup(30)}
-        <h1>Dariusz Dudkiewicz</h1>
-        <p>973-271-4228</p>
-        <p>woboe1962@gmail.com</p>
-        <p class="site">globotips.com</p>
-      </div>
-    </article>`,
+    "3.75in 2.25in",
+    `${businessCardFace("front", siteQr)}
+     ${businessCardFace("back", siteQr)}`,
+  );
+}
+
+function businessCardSheetHtml(css, siteQr) {
+  const fronts = Array.from({ length: 10 }, () =>
+    businessCardFace("front", siteQr, { trim: true, paged: false }),
+  ).join("");
+  const backs = Array.from({ length: 10 }, () =>
+    businessCardFace("back", siteQr, { trim: true, paged: false }),
+  ).join("");
+  return pageWrap(
+    css,
+    "8.5in 11in",
+    `<section class="print-page sheet">
+      <p class="hint">Front · 10-up · trim 3.5 × 2 in · cut on marks</p>
+      <div class="marks">${cropMarks()}</div>
+      <div class="sheet-grid">${fronts}</div>
+    </section>
+    <section class="print-page sheet">
+      <p class="hint hint-right">Back · duplex flip on long edge</p>
+      <div class="marks">${cropMarks()}</div>
+      <div class="sheet-grid mirror">${backs}</div>
+    </section>`,
   );
 }
 
@@ -624,11 +786,12 @@ function parsePageSize(pageSize) {
   return { width: toPx(w), height: toPx(h) };
 }
 
-async function render(page, html, pageSize, pdfPath, pngPath) {
+async function render(page, html, pageSize, pdfPath, pngPath, options = {}) {
   await page.setContent(html, { waitUntil: "load" });
   await page.evaluateHandle("document.fonts.ready");
   const { width, height } = parsePageSize(pageSize);
-  await page.setViewport({ width, height, deviceScaleFactor: 2 });
+  const scale = options.scale ?? 2;
+  await page.setViewport({ width, height, deviceScaleFactor: scale });
   await page.pdf({
     path: pdfPath,
     width: pageSize.split(" ")[0],
@@ -636,7 +799,7 @@ async function render(page, html, pageSize, pdfPath, pngPath) {
     printBackground: true,
     preferCSSPageSize: true,
     margin: { top: 0, right: 0, bottom: 0, left: 0 },
-    pageRanges: "1",
+    pageRanges: options.pageRanges ?? "1",
   });
   if (pngPath) {
     await page.screenshot({ path: pngPath, type: "png", omitBackground: false });
@@ -658,6 +821,12 @@ async function main() {
   const qrs = Object.fromEntries(
     await Promise.all(STAFF.map(async (staff) => [staff.code, await makeQr(staff.code)])),
   );
+  const siteQr = await QRCode.toDataURL("https://globotips.com", {
+    errorCorrectionLevel: "M",
+    margin: 1,
+    width: 700,
+    color: { dark: NAVY, light: WHITE },
+  });
 
   const browser = await puppeteer.launch({
     executablePath: CHROME,
@@ -707,14 +876,38 @@ async function main() {
     png: path.join(DOCS_PRINT, "hotel-one-pager.png"),
   });
   jobs.push({
-    html: businessCardHtml(css),
-    pageSize: "3.5in 2in",
+    html: pageWrap(css, "3.75in 2.25in", businessCardFace("front", siteQr)),
+    pageSize: "3.75in 2.25in",
+    pdf: path.join(PUBLIC_PRINT, "business-card-front.pdf"),
+    png: path.join(DOCS_PRINT, "business-card-front.png"),
+    scale: 300 / 96,
+  });
+  jobs.push({
+    html: pageWrap(css, "3.75in 2.25in", businessCardFace("back", siteQr)),
+    pageSize: "3.75in 2.25in",
+    pdf: path.join(PUBLIC_PRINT, "business-card-back.pdf"),
+    png: path.join(DOCS_PRINT, "business-card-back.png"),
+    scale: 300 / 96,
+  });
+  jobs.push({
+    html: businessCardHtml(css, siteQr),
+    pageSize: "3.75in 2.25in",
     pdf: path.join(PUBLIC_PRINT, "business-card.pdf"),
-    png: path.join(DOCS_PRINT, "business-card.png"),
+    pageRanges: "1-2",
+  });
+  jobs.push({
+    html: businessCardSheetHtml(css, siteQr),
+    pageSize: "8.5in 11in",
+    pdf: path.join(PUBLIC_PRINT, "business-card-10up-letter.pdf"),
+    png: path.join(DOCS_PRINT, "business-card-10up-letter.png"),
+    pageRanges: "1-2",
   });
 
   for (const job of jobs) {
-    await render(page, job.html, job.pageSize, job.pdf, job.png);
+    await render(page, job.html, job.pageSize, job.pdf, job.png, {
+      pageRanges: job.pageRanges,
+      scale: job.scale,
+    });
     console.log(path.relative(ROOT, job.pdf));
     if (job.png) console.log(path.relative(ROOT, job.png));
   }
@@ -731,6 +924,8 @@ async function main() {
     "desk-card-5x7-maria-santos.png",
     "desk-card-5x7-template.png",
     "hotel-one-pager.png",
+    "business-card-front.png",
+    "business-card-back.png",
   ]) {
     await writeFile(path.join(PUBLIC_PRINT, name), await readFile(path.join(DOCS_PRINT, name)));
   }
