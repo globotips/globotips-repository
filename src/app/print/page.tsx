@@ -59,7 +59,8 @@ export default function PrintKitPage() {
           </h2>
           <ol className="mt-6 max-w-2xl list-decimal space-y-3 pl-5 text-base leading-7 text-navy/80">
             <li>
-              The letter-size one-pager — leave two or three copies on the table.
+              The letter-size one-pager — Dariusz or Rosalie version, depending
+              on who is in the room. Leave two or three copies on the table.
             </li>
             <li>
               Three filled 5 × 7 desk cards (Maria Santos, James Okonkwo, Elena
@@ -82,24 +83,44 @@ export default function PrintKitPage() {
             Hotel manager one-pager
           </h2>
           <p className="mt-3 max-w-xl text-navy/70">
-            Letter size, one page. Staff lose cash tips; it costs the hotel
-            nothing to try.
+            Letter size, one page. Same offer on both. Use the sheet for the
+            founder who is in the room.
           </p>
-          <a href="/print/hotel-one-pager.pdf" className="mt-6 block max-w-sm">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/print/hotel-one-pager.png"
-              alt="Preview of the hotel manager one-pager"
-              className="w-full border border-navy/10"
-            />
-          </a>
-          <div className="mt-6">
-            <a
-              href="/print/hotel-one-pager.pdf"
-              className="inline-flex items-center justify-center rounded-lg bg-brand px-5 py-3 text-sm font-medium text-white transition hover:bg-navy"
-            >
-              Download one-pager
-            </a>
+          <div className="mt-6 grid gap-6 sm:grid-cols-2">
+            <div>
+              <p className="text-sm font-semibold text-navy">Dariusz Dudkiewicz</p>
+              <a href="/print/hotel-one-pager.pdf" className="mt-3 block">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/print/hotel-one-pager.png"
+                  alt="Hotel manager one-pager for Dariusz Dudkiewicz"
+                  className="w-full border border-navy/10"
+                />
+              </a>
+              <a
+                href="/print/hotel-one-pager.pdf"
+                className="mt-4 inline-flex items-center justify-center rounded-lg bg-brand px-5 py-3 text-sm font-medium text-white transition hover:bg-navy"
+              >
+                Download Dariusz one-pager
+              </a>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-navy">Rosalie Dudkiewicz</p>
+              <a href="/print/hotel-one-pager-rosalie.pdf" className="mt-3 block">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/print/hotel-one-pager-rosalie.png"
+                  alt="Hotel manager one-pager for Rosalie Dudkiewicz"
+                  className="w-full border border-navy/10"
+                />
+              </a>
+              <a
+                href="/print/hotel-one-pager-rosalie.pdf"
+                className="mt-4 inline-flex items-center justify-center rounded-lg bg-navy px-5 py-3 text-sm font-medium text-white transition hover:bg-brand"
+              >
+                Download Rosalie one-pager
+              </a>
+            </div>
           </div>
         </section>
 

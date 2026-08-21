@@ -635,6 +635,25 @@ function deskHtml(css, staff, qrDataUrl, sizeName) {
   return pageWrap(css, pageSize, deskCardFace(staff, qrDataUrl, sizeName));
 }
 
+const FOUNDERS = {
+  dariusz: {
+    slug: "",
+    name: "Dariusz Dudkiewicz",
+    role: "Co-founder",
+    credential: "",
+    email: "",
+    phone: "973-271-4228",
+  },
+  rosalie: {
+    slug: "rosalie",
+    name: "Rosalie Dudkiewicz",
+    role: "Co-founder",
+    credential: "",
+    email: "rdudkiewicz101@gmail.com",
+    phone: "973-271-4228",
+  },
+};
+
 function tentHtml(css, staff, qrDataUrl) {
   const face = deskCardFace(staff, qrDataUrl, "size-5x7");
   return pageWrap(
@@ -647,7 +666,8 @@ function tentHtml(css, staff, qrDataUrl) {
   );
 }
 
-function onePagerHtml(css) {
+function onePagerHtml(css, contact = FOUNDERS.dariusz) {
+  const email = contact.email || "woboe1962@gmail.com";
   return pageWrap(
     css,
     "8.5in 11in",
@@ -699,33 +719,14 @@ function onePagerHtml(css) {
       </section>
       <footer class="contact">
         <div>
-          <p class="who-line">Dariusz Dudkiewicz</p>
-          <p class="details">973-271-4228 · woboe1962@gmail.com</p>
+          <p class="who-line">${escapeHtml(contact.name)}</p>
+          <p class="details">${escapeHtml(contact.phone)} · ${escapeHtml(email)}</p>
         </div>
         <p class="url">globotips.com</p>
       </footer>
     </article>`,
   );
 }
-
-const FOUNDERS = {
-  dariusz: {
-    slug: "",
-    name: "Dariusz Dudkiewicz",
-    role: "Co-founder",
-    credential: "",
-    email: "",
-    phone: "973-271-4228",
-  },
-  rosalie: {
-    slug: "rosalie",
-    name: "Rosalie Dudkiewicz",
-    role: "Co-founder",
-    credential: "RN",
-    email: "rdudkiewicz101@gmail.com",
-    phone: "973-271-4228",
-  },
-};
 
 function cardFileBase(slug) {
   return slug ? `business-card-${slug}` : "business-card";
@@ -914,7 +915,9 @@ async function main() {
   const page = await browser.newPage();
 
   const jobs = [];
+  const only = process.argv.find((arg) => arg.startsWith("--only="))?.slice(7);
 
+  if (!only || only === "all") {
   for (const staff of [null, ...STAFF]) {
     const slug = staff ? staff.code : "template";
     const qr = staff ? qrs[staff.code] : "";
@@ -946,15 +949,27 @@ async function main() {
           : undefined,
     });
   }
+  }
 
-  jobs.push({
-    html: onePagerHtml(css),
-    pageSize: "8.5in 11in",
-    pdf: path.join(PUBLIC_PRINT, "hotel-one-pager.pdf"),
-    png: path.join(DOCS_PRINT, "hotel-one-pager.png"),
-  });
-  jobs.push(...businessCardJobs(css, siteQr, FOUNDERS.dariusz));
-  jobs.push(...businessCardJobs(css, siteQr, FOUNDERS.rosalie));
+  if (!only || only === "all") {
+    jobs.push({
+      html: onePagerHtml(css, FOUNDERS.dariusz),
+      pageSize: "8.5in 11in",
+      pdf: path.join(PUBLIC_PRINT, "hotel-one-pager.pdf"),
+      png: path.join(DOCS_PRINT, "hotel-one-pager.png"),
+    });
+    jobs.push(...businessCardJobs(css, siteQr, FOUNDERS.dariusz));
+  }
+
+  if (!only || only === "all" || only === "rosalie") {
+    jobs.push({
+      html: onePagerHtml(css, FOUNDERS.rosalie),
+      pageSize: "8.5in 11in",
+      pdf: path.join(PUBLIC_PRINT, "hotel-one-pager-rosalie.pdf"),
+      png: path.join(DOCS_PRINT, "hotel-one-pager-rosalie.png"),
+    });
+    jobs.push(...businessCardJobs(css, siteQr, FOUNDERS.rosalie));
+  }
 
   for (const job of jobs) {
     await render(page, job.html, job.pageSize, job.pdf, job.png, {
@@ -967,21 +982,29 @@ async function main() {
 
   await browser.close();
 
-  for (const extra of ["james-okonkwo", "elena-rossi"]) {
-    const src = path.join(PUBLIC_PRINT, `desk-card-5x7-${extra}.png`);
-    const dest = path.join(DOCS_PRINT, `desk-card-5x7-${extra}.png`);
-    await writeFile(dest, await readFile(src));
+  const previewCopies = [];
+  if (!only || only === "all") {
+    previewCopies.push(
+      "desk-card-5x7-maria-santos.png",
+      "desk-card-5x7-template.png",
+      "hotel-one-pager.png",
+      "business-card-front.png",
+      "business-card-back.png",
+    );
+    for (const extra of ["james-okonkwo", "elena-rossi"]) {
+      const src = path.join(PUBLIC_PRINT, `desk-card-5x7-${extra}.png`);
+      const dest = path.join(DOCS_PRINT, `desk-card-5x7-${extra}.png`);
+      await writeFile(dest, await readFile(src));
+    }
   }
-
-  for (const name of [
-    "desk-card-5x7-maria-santos.png",
-    "desk-card-5x7-template.png",
-    "hotel-one-pager.png",
-    "business-card-front.png",
-    "business-card-back.png",
-    "business-card-rosalie-front.png",
-    "business-card-rosalie-back.png",
-  ]) {
+  if (!only || only === "all" || only === "rosalie") {
+    previewCopies.push(
+      "business-card-rosalie-front.png",
+      "business-card-rosalie-back.png",
+      "hotel-one-pager-rosalie.png",
+    );
+  }
+  for (const name of previewCopies) {
     await writeFile(path.join(PUBLIC_PRINT, name), await readFile(path.join(DOCS_PRINT, name)));
   }
 
