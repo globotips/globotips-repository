@@ -44,6 +44,7 @@ Displayed staff links use `globotips.com/tip/{code}`. Downloaded QR PNGs encode 
 ## What is in Phase 1
 
 - Landing page at `/` (original Phase 1 landing kept at `/classic`)
+- Hotel print kit at `/print` (desk cards, table tents, one-pager). PDFs live in `public/print/`; PNG previews for review are in `docs/print/`. Regenerate with `npm run print:kit`.
 - Hotel admin at `/login` and `/admin`: add/remove employees, download QR PNGs, see **aggregate** totals by day and by employee
 - Guest tip page at `/tip/{code}`
 - Demo checkout only — the hotel never holds money, and individual tip amounts are not listed on the hotel dashboard

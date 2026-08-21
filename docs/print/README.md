@@ -1,0 +1,32 @@
+# Hotel meeting print kit
+
+Print-ready files for a Tampa hotel pilot meeting. Download from `/print` or the PDFs in `public/print/`.
+
+Regenerate after design edits:
+
+```bash
+npm run print:kit
+```
+
+## What to take
+
+1. **Hotel manager one-pager** — `public/print/hotel-one-pager.pdf`  
+   Letter, one side. Leave two or three copies.
+2. **Filled 5 × 7 desk cards** — Maria Santos, James Okonkwo, Elena Rossi  
+   Laminate. Set them on a nightstand or checkout desk where cash tips are left. Each QR opens that person’s tip URL on globotips.com.
+3. **Blank 5 × 7 template** — shows Name / Photo / QR placeholders.  
+   Use this to make the point: one person, one QR. Not a hotel-wide code.
+4. **Optional** — 4 × 6 cards, 7 × 10 table tents (two 5 × 7 faces), Dariusz business card.
+
+## Print notes
+
+- Desk cards: print **actual size**, color, on white cardstock. Trim if the printer adds a letter sheet. Laminate.
+- Table tents: print the 7 × 10 PDF, fold on the green hairline, stand it up.
+- One-pager: letter, color, single-sided.
+- Colors are only Globo navy `#00214D`, Tips green `#00A878`, and white.
+
+## Locked facts on the pieces
+
+- Guests can still leave cash, or scan. No guest app.
+- Tips go to that person. The hotel does not handle the money.
+- Free 60-day trial, no monthly fee, about 3% from the tip, no guest surcharge.

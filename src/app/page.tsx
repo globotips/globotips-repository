@@ -162,6 +162,9 @@ export default function HomePage() {
           <Logo className="opacity-90" />
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
             <p>globotips.com</p>
+            <Link href="/print" className="hover:text-navy">
+              Hotel print kit
+            </Link>
             <Link href="/classic" className="hover:text-navy">
               Original homepage
             </Link>
