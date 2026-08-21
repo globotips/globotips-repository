@@ -70,8 +70,8 @@ export default function PrintKitPage() {
               own card and QR.
             </li>
             <li>
-              Dariusz business cards — single card with bleed, plus a letter
-              10-up sheet for a print shop.
+              Business cards for Dariusz Dudkiewicz and Rosalie Dudkiewicz —
+              single cards with bleed, plus letter 10-up sheets.
             </li>
             <li>Optional: table-tent PDFs.</li>
           </ol>
@@ -160,20 +160,22 @@ export default function PrintKitPage() {
 
         <section className="mt-12 border-t border-navy/10 pt-10">
           <h2 className="text-xl font-semibold tracking-tight text-navy">
-            Business card
+            Business cards
           </h2>
           <p className="mt-3 max-w-xl text-navy/70">
-            US 3.5 × 2 in with 0.125 in bleed (page is 3.75 × 2.25). Front is
-            Dariusz Dudkiewicz, co-founder. Back has a QR to globotips.com.
-            Print the 10-up letter sheet at a shop, duplex flip on the long
-            edge, then cut on the marks.
+            US 3.5 × 2 in with 0.125 in bleed (page is 3.75 × 2.25). Back has a
+            QR to globotips.com. Print the 10-up letter sheet at a shop, duplex
+            flip on the long edge, then cut on the marks.
           </p>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <h3 className="mt-8 text-base font-semibold text-navy">
+            Dariusz Dudkiewicz
+          </h3>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <a href="/print/business-card.pdf">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/print/business-card-front.png"
-                alt="Business card front"
+                alt="Dariusz Dudkiewicz business card front"
                 className="w-full border border-navy/10"
               />
             </a>
@@ -181,12 +183,12 @@ export default function PrintKitPage() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/print/business-card-back.png"
-                alt="Business card back"
+                alt="Dariusz Dudkiewicz business card back"
                 className="w-full border border-navy/10"
               />
             </a>
           </div>
-          <ul className="mt-6 space-y-2 text-sm">
+          <ul className="mt-4 space-y-2 text-sm">
             <li>
               <a href="/print/business-card.pdf" className="font-medium text-navy hover:text-brand">
                 Single card, front and back, with bleed
@@ -194,6 +196,39 @@ export default function PrintKitPage() {
             </li>
             <li>
               <a href="/print/business-card-10up-letter.pdf" className="font-medium text-navy hover:text-brand">
+                Letter 10-up sheet
+              </a>
+            </li>
+          </ul>
+          <h3 className="mt-10 text-base font-semibold text-navy">
+            Rosalie Dudkiewicz
+          </h3>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <a href="/print/business-card-rosalie.pdf">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/print/business-card-rosalie-front.png"
+                alt="Rosalie Dudkiewicz business card front"
+                className="w-full border border-navy/10"
+              />
+            </a>
+            <a href="/print/business-card-rosalie.pdf">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/print/business-card-rosalie-back.png"
+                alt="Rosalie Dudkiewicz business card back"
+                className="w-full border border-navy/10"
+              />
+            </a>
+          </div>
+          <ul className="mt-4 space-y-2 text-sm">
+            <li>
+              <a href="/print/business-card-rosalie.pdf" className="font-medium text-navy hover:text-brand">
+                Single card, front and back, with bleed
+              </a>
+            </li>
+            <li>
+              <a href="/print/business-card-rosalie-10up-letter.pdf" className="font-medium text-navy hover:text-brand">
                 Letter 10-up sheet
               </a>
             </li>

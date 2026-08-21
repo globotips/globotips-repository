@@ -17,7 +17,8 @@ npm run print:kit
 3. **Blank 5 × 7 template** — shows Name / Photo / QR placeholders.  
    Use this to make the point: one person, one QR. Not a hotel-wide code.
 4. **Dariusz business card** — `public/print/business-card.pdf` (front + back, 0.125 in bleed) and `public/print/business-card-10up-letter.pdf` (10-up on letter).
-5. **Optional** — 4 × 6 cards and 7 × 10 table tents (two 5 × 7 faces).
+5. **Rosalie Dudkiewicz business card** — `public/print/business-card-rosalie.pdf` and `public/print/business-card-rosalie-10up-letter.pdf`. Spelling is Rosalie (not Rosalia). Same 3.5 × 2 trim, bleed, and 10-up as Dariusz.
+6. **Optional** — 4 × 6 cards and 7 × 10 table tents (two 5 × 7 faces).
 
 ## Print notes
 

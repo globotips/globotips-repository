@@ -518,9 +518,22 @@ function sharedCss(fontCss) {
       color: ${GREEN};
       margin-top: 0.03in;
     }
+    .biz .credential {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: ${NAVY};
+      margin-top: 0.02in;
+    }
     .biz .phone {
       margin-top: 0.08in;
       font-size: 11px;
+      font-weight: 500;
+    }
+    .biz .email {
+      margin-top: 0.03in;
+      font-size: 10px;
       font-weight: 500;
     }
     .biz .site {
@@ -695,7 +708,30 @@ function onePagerHtml(css) {
   );
 }
 
-function businessCardFace(side, siteQr, { trim = false, paged = true } = {}) {
+const FOUNDERS = {
+  dariusz: {
+    slug: "",
+    name: "Dariusz Dudkiewicz",
+    role: "Co-founder",
+    credential: "",
+    email: "",
+    phone: "973-271-4228",
+  },
+  rosalie: {
+    slug: "rosalie",
+    name: "Rosalie Dudkiewicz",
+    role: "Co-founder",
+    credential: "RN",
+    email: "rdudkiewicz101@gmail.com",
+    phone: "973-271-4228",
+  },
+};
+
+function cardFileBase(slug) {
+  return slug ? `business-card-${slug}` : "business-card";
+}
+
+function businessCardFace(side, siteQr, { trim = false, paged = true, person = FOUNDERS.dariusz } = {}) {
   const sizeClass = `${trim ? " biz-trim" : ""}${paged ? " print-page" : ""}`;
   if (side === "back") {
     return `<article class="biz biz-back${sizeClass}">
@@ -711,15 +747,23 @@ function businessCardFace(side, siteQr, { trim = false, paged = true } = {}) {
       </div>
     </article>`;
   }
-  return `<article class="print-page biz${sizeClass}">
+  const credential = person.credential
+    ? `<p class="credential">${escapeHtml(person.credential)}</p>`
+    : "";
+  const email = person.email
+    ? `<p class="email">${escapeHtml(person.email)}</p>`
+    : "";
+  return `<article class="biz${sizeClass}">
     <div class="bleed-band"></div>
     <div class="bleed-rail"></div>
     <div class="biz-body">
       ${logoLockup(trim ? 28 : 32)}
-      <h1>Dariusz Dudkiewicz</h1>
-      <p class="role">Co-founder</p>
+      <h1>${escapeHtml(person.name)}</h1>
+      <p class="role">${escapeHtml(person.role)}</p>
+      ${credential}
       <p class="site">globotips.com</p>
-      <p class="phone">973-271-4228</p>
+      ${email}
+      <p class="phone">${escapeHtml(person.phone)}</p>
     </div>
   </article>`;
 }
@@ -739,36 +783,70 @@ function cropMarks() {
   return marks.join("");
 }
 
-function businessCardHtml(css, siteQr) {
+function businessCardHtml(css, siteQr, person = FOUNDERS.dariusz) {
   return pageWrap(
     css,
     "3.75in 2.25in",
-    `${businessCardFace("front", siteQr)}
-     ${businessCardFace("back", siteQr)}`,
+    `${businessCardFace("front", siteQr, { person })}
+     ${businessCardFace("back", siteQr, { person })}`,
   );
 }
 
-function businessCardSheetHtml(css, siteQr) {
+function businessCardSheetHtml(css, siteQr, person = FOUNDERS.dariusz) {
   const fronts = Array.from({ length: 10 }, () =>
-    businessCardFace("front", siteQr, { trim: true, paged: false }),
+    businessCardFace("front", siteQr, { trim: true, paged: false, person }),
   ).join("");
   const backs = Array.from({ length: 10 }, () =>
-    businessCardFace("back", siteQr, { trim: true, paged: false }),
+    businessCardFace("back", siteQr, { trim: true, paged: false, person }),
   ).join("");
+  const who = person.name.split(" ")[0];
   return pageWrap(
     css,
     "8.5in 11in",
     `<section class="print-page sheet">
-      <p class="hint">Front · 10-up · trim 3.5 × 2 in · cut on marks</p>
+      <p class="hint">Front · ${escapeHtml(who)} · 10-up · trim 3.5 × 2 in · cut on marks</p>
       <div class="marks">${cropMarks()}</div>
       <div class="sheet-grid">${fronts}</div>
     </section>
     <section class="print-page sheet">
-      <p class="hint hint-right">Back · duplex flip on long edge</p>
+      <p class="hint hint-right">Back · ${escapeHtml(who)} · duplex flip on long edge</p>
       <div class="marks">${cropMarks()}</div>
       <div class="sheet-grid mirror">${backs}</div>
     </section>`,
   );
+}
+
+function businessCardJobs(css, siteQr, person) {
+  const base = cardFileBase(person.slug);
+  return [
+    {
+      html: pageWrap(css, "3.75in 2.25in", businessCardFace("front", siteQr, { person })),
+      pageSize: "3.75in 2.25in",
+      pdf: path.join(PUBLIC_PRINT, `${base}-front.pdf`),
+      png: path.join(DOCS_PRINT, `${base}-front.png`),
+      scale: 300 / 96,
+    },
+    {
+      html: pageWrap(css, "3.75in 2.25in", businessCardFace("back", siteQr, { person })),
+      pageSize: "3.75in 2.25in",
+      pdf: path.join(PUBLIC_PRINT, `${base}-back.pdf`),
+      png: path.join(DOCS_PRINT, `${base}-back.png`),
+      scale: 300 / 96,
+    },
+    {
+      html: businessCardHtml(css, siteQr, person),
+      pageSize: "3.75in 2.25in",
+      pdf: path.join(PUBLIC_PRINT, `${base}.pdf`),
+      pageRanges: "1-2",
+    },
+    {
+      html: businessCardSheetHtml(css, siteQr, person),
+      pageSize: "8.5in 11in",
+      pdf: path.join(PUBLIC_PRINT, `${base}-10up-letter.pdf`),
+      png: path.join(DOCS_PRINT, `${base}-10up-letter.png`),
+      pageRanges: "1-2",
+    },
+  ];
 }
 
 async function makeQr(code) {
@@ -875,33 +953,8 @@ async function main() {
     pdf: path.join(PUBLIC_PRINT, "hotel-one-pager.pdf"),
     png: path.join(DOCS_PRINT, "hotel-one-pager.png"),
   });
-  jobs.push({
-    html: pageWrap(css, "3.75in 2.25in", businessCardFace("front", siteQr)),
-    pageSize: "3.75in 2.25in",
-    pdf: path.join(PUBLIC_PRINT, "business-card-front.pdf"),
-    png: path.join(DOCS_PRINT, "business-card-front.png"),
-    scale: 300 / 96,
-  });
-  jobs.push({
-    html: pageWrap(css, "3.75in 2.25in", businessCardFace("back", siteQr)),
-    pageSize: "3.75in 2.25in",
-    pdf: path.join(PUBLIC_PRINT, "business-card-back.pdf"),
-    png: path.join(DOCS_PRINT, "business-card-back.png"),
-    scale: 300 / 96,
-  });
-  jobs.push({
-    html: businessCardHtml(css, siteQr),
-    pageSize: "3.75in 2.25in",
-    pdf: path.join(PUBLIC_PRINT, "business-card.pdf"),
-    pageRanges: "1-2",
-  });
-  jobs.push({
-    html: businessCardSheetHtml(css, siteQr),
-    pageSize: "8.5in 11in",
-    pdf: path.join(PUBLIC_PRINT, "business-card-10up-letter.pdf"),
-    png: path.join(DOCS_PRINT, "business-card-10up-letter.png"),
-    pageRanges: "1-2",
-  });
+  jobs.push(...businessCardJobs(css, siteQr, FOUNDERS.dariusz));
+  jobs.push(...businessCardJobs(css, siteQr, FOUNDERS.rosalie));
 
   for (const job of jobs) {
     await render(page, job.html, job.pageSize, job.pdf, job.png, {
@@ -926,6 +979,8 @@ async function main() {
     "hotel-one-pager.png",
     "business-card-front.png",
     "business-card-back.png",
+    "business-card-rosalie-front.png",
+    "business-card-rosalie-back.png",
   ]) {
     await writeFile(path.join(PUBLIC_PRINT, name), await readFile(path.join(DOCS_PRINT, name)));
   }
