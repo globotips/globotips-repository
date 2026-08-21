@@ -31,6 +31,7 @@
   --font-sans: var(--font-source-sans);
   --font-display: var(--font-fraunces);
   --font-logo: var(--font-montserrat);
+  --font-home: var(--font-inter);
 }
 
 html {
@@ -49,6 +50,16 @@ body {
 
 .font-logo {
   font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+}
+
+.home-v2 {
+  background: #fff;
+  color: var(--navy);
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
+.home-v2 ::selection {
+  background: #00a87833;
 }
 
 ::selection {
