@@ -123,7 +123,12 @@ export default function ClassicHomePage() {
       <footer className="border-t border-line">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-5 py-8 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
           <Logo className="opacity-90" />
-          <p>globotips.com</p>
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+            <p>globotips.com</p>
+            <Link href="/print" className="hover:text-ink">
+              Hotel print kit
+            </Link>
+          </div>
         </div>
       </footer>
     </div>

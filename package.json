@@ -7,6 +7,7 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
+    "print:kit": "node scripts/print-kit/generate.mjs",
     "db:setup": "prisma generate && prisma db push && prisma db seed",
     "db:seed": "prisma db seed"
   },
@@ -30,6 +31,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.3.1",
     "prisma": "6.12.0",
+    "puppeteer-core": "^25.8.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.12",
     "typescript": "^5"
