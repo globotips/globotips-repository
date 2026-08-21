@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export function Logo({
   className = "",
   markClassName = "h-8 w-8",
@@ -14,10 +16,13 @@ export function Logo({
 
   return (
     <span className={`inline-flex items-center gap-2 ${className}`}>
-      <img
+      <Image
         src="/globotips-mark.svg"
         alt={wordmark ? "" : "GloboTips"}
+        width={32}
+        height={32}
         className={`${markSize} shrink-0`}
+        unoptimized
       />
       {wordmark ? (
         <span
