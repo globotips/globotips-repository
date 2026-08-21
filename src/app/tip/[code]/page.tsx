@@ -39,8 +39,8 @@ export default async function TipPage({
   return (
     <div className="mx-auto flex min-h-full w-full max-w-md flex-col bg-paper">
       <DemoBanner compact />
-      <header className="flex items-center justify-center px-5 py-4">
-        <Logo markClassName="h-7 w-7" />
+      <header className="flex max-h-14 items-center justify-center px-5 py-3">
+        <Logo compact />
       </header>
       <main className="flex flex-1 flex-col px-5 pb-10">
         <div className="flex flex-col items-center pt-2">

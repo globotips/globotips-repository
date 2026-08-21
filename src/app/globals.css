@@ -11,6 +11,8 @@
   --card: #fffdf8;
   --line: #d9d0c2;
   --danger: #9b3d2e;
+  --navy: #00214d;
+  --brand: #00a878;
 }
 
 @theme inline {
@@ -24,8 +26,11 @@
   --color-card: var(--card);
   --color-line: var(--line);
   --color-danger: var(--danger);
+  --color-navy: var(--navy);
+  --color-brand: var(--brand);
   --font-sans: var(--font-source-sans);
   --font-display: var(--font-fraunces);
+  --font-logo: var(--font-montserrat);
 }
 
 html {
@@ -40,6 +45,10 @@ body {
 
 .font-display {
   font-family: var(--font-fraunces), ui-serif, Georgia, serif;
+}
+
+.font-logo {
+  font-family: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
 }
 
 ::selection {
