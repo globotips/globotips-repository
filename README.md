@@ -1,6 +1,6 @@
 # GloboTips
 
-Cashless tipping for hotel staff and tour guides. Guests scan a QR with their phone camera. There is no guest app, guest account, or guest login.
+Cashless tipping for hotels, tour guides, and cruise staff. Guests scan a QR with their phone camera. There is no guest app, guest account, or guest login.
 
 This repository is **Phase 1**: a working local demo. Checkout is shown and labeled as demo mode. **No real money is taken. Stripe is not connected.**
 
@@ -43,7 +43,7 @@ Displayed staff links use `globotips.com/tip/{code}`. Downloaded QR PNGs encode 
 
 ## What is in Phase 1
 
-- Landing page at `/`
+- Landing page at `/` (original Phase 1 landing kept at `/classic`)
 - Hotel admin at `/login` and `/admin`: add/remove employees, download QR PNGs, see **aggregate** totals by day and by employee
 - Guest tip page at `/tip/{code}`
 - Demo checkout only — the hotel never holds money, and individual tip amounts are not listed on the hotel dashboard
