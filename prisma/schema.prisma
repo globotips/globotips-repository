@@ -2,8 +2,11 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// PostgreSQL for the laptop demo and Vercel production.
+// DATABASE_URL must be postgresql://... (Neon, Vercel Postgres, or local Postgres).
+// SQLite file:./dev.db is not supported — it does not persist on Vercel serverless.
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
