@@ -3,7 +3,9 @@ import { DemoBanner } from "@/components/demo-banner";
 import { Logo } from "@/components/logo";
 import { PhotoPlaceholder } from "@/components/photo-placeholder";
 import { prisma } from "@/lib/db";
-import { TipCheckout } from "./tip-checkout";
+import { confirmCheckoutSessionForTip } from "@/lib/stripe";
+import { getStripeMode } from "@/lib/stripe-mode";
+import { TipCheckout, type TipPayMode } from "./tip-checkout";
 
 export const dynamic = "force-dynamic";
 
@@ -24,10 +26,13 @@ export async function generateMetadata({
 
 export default async function TipPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ code: string }>;
+  searchParams: Promise<{ session_id?: string; paid?: string; canceled?: string }>;
 }) {
   const { code } = await params;
+  const query = await searchParams;
   const employee = await prisma.employee.findUnique({
     where: { tipCode: code },
     include: { hotel: true },
@@ -36,9 +41,22 @@ export default async function TipPage({
     notFound();
   }
 
+  const mode = getStripeMode();
+  const payMode: TipPayMode =
+    mode.kind === "test" ? "stripe" : mode.kind === "blocked" ? "blocked" : "demo";
+
+  let initialPaidCents: number | null = null;
+  if (payMode === "stripe" && query.session_id) {
+    try {
+      initialPaidCents = await confirmCheckoutSessionForTip(code, query.session_id);
+    } catch {
+      initialPaidCents = null;
+    }
+  }
+
   return (
     <div className="mx-auto flex min-h-full w-full max-w-md flex-col bg-paper">
-      <DemoBanner compact />
+      <DemoBanner compact stripeMode={mode} />
       <header className="flex items-center justify-center px-5 py-4">
         <Logo markClassName="h-7 w-7" />
       </header>
@@ -53,7 +71,15 @@ export default async function TipPage({
           </h1>
           <p className="mt-1 text-sm text-muted">{employee.hotel.name}</p>
         </div>
-        <TipCheckout code={employee.tipCode} name={employee.name} />
+        <TipCheckout
+          code={employee.tipCode}
+          name={employee.name}
+          payMode={payMode}
+          payoutsEnabled={employee.payoutsEnabled}
+          blockedReason={mode.kind === "blocked" ? mode.reason : undefined}
+          initialPaidCents={initialPaidCents}
+          canceled={query.canceled === "1"}
+        />
       </main>
     </div>
   );

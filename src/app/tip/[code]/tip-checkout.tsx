@@ -1,23 +1,44 @@
 "use client";
 
 import { useState } from "react";
-import { recordDemoTipAction } from "@/app/admin/actions";
+import { recordDemoTipAction, startCheckoutAction } from "@/app/tip/[code]/actions";
 import { formatUsd, parseUsdToCents } from "@/lib/money";
 
 const PRESETS = [500, 1000, 2000];
 
 type Step = "amount" | "pay" | "done";
 
-export function TipCheckout({ code, name }: { code: string; name: string }) {
-  const [step, setStep] = useState<Step>("amount");
+export type TipPayMode = "demo" | "stripe" | "blocked";
+
+export function TipCheckout({
+  code,
+  name,
+  payMode,
+  payoutsEnabled,
+  blockedReason,
+  initialPaidCents = null,
+  canceled = false,
+}: {
+  code: string;
+  name: string;
+  payMode: TipPayMode;
+  payoutsEnabled: boolean;
+  blockedReason?: string;
+  initialPaidCents?: number | null;
+  canceled?: boolean;
+}) {
+  const [step, setStep] = useState<Step>(initialPaidCents ? "done" : "amount");
   const [preset, setPreset] = useState<number | "custom" | null>(1000);
   const [custom, setCustom] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(
+    canceled ? "Checkout was canceled. Choose an amount to try again." : null,
+  );
   const [pending, setPending] = useState(false);
-  const [paidCents, setPaidCents] = useState<number | null>(null);
+  const [paidCents, setPaidCents] = useState<number | null>(initialPaidCents);
 
   const amountCents =
     preset === "custom" ? parseUsdToCents(custom) : preset;
+  const stripeLive = payMode === "stripe" && payoutsEnabled;
 
   function continueToPay() {
     if (!amountCents) {
@@ -25,7 +46,21 @@ export function TipCheckout({ code, name }: { code: string; name: string }) {
       return;
     }
     setError(null);
+    if (payMode === "stripe") {
+      void submitStripePay(amountCents);
+      return;
+    }
     setStep("pay");
+  }
+
+  async function submitStripePay(cents: number) {
+    setPending(true);
+    setError(null);
+    const result = await startCheckoutAction(code, cents);
+    setPending(false);
+    if (result?.ok === false) {
+      setError(result.error);
+    }
   }
 
   async function submitDemoPay() {
@@ -49,14 +84,16 @@ export function TipCheckout({ code, name }: { code: string; name: string }) {
     return (
       <div className="mt-8 rounded-3xl border border-line bg-card p-6 text-center">
         <p className="text-sm font-semibold uppercase tracking-[0.16em] text-teal">
-          Demo complete
+          {payMode === "stripe" ? "Tip sent" : "Demo complete"}
         </p>
         <h2 className="mt-2 font-display text-2xl">
           Thank you for tipping {name}
         </h2>
         <p className="mt-3 text-lg">{formatUsd(paidCents)}</p>
         <p className="mt-4 text-sm leading-6 text-muted">
-          This was demo mode. No card was charged and no real money moved.
+          {payMode === "stripe"
+            ? "Paid through Stripe Checkout in test mode. The guest was not surcharged. GloboTips keeps 3% from the tip."
+            : "This was demo mode. No card was charged and no real money moved."}
         </p>
         <button
           type="button"
@@ -66,13 +103,46 @@ export function TipCheckout({ code, name }: { code: string; name: string }) {
           }}
           className="mt-6 text-sm font-semibold text-teal"
         >
-          Send another demo tip
+          {payMode === "stripe" ? "Send another tip" : "Send another demo tip"}
         </button>
       </div>
     );
   }
 
-  if (step === "pay" && amountCents) {
+  if (payMode === "blocked") {
+    return (
+      <div className="mt-8 rounded-2xl border border-danger/30 bg-danger/10 p-5 text-sm leading-6 text-danger">
+        {blockedReason ??
+          "Stripe is blocked. Use test keys only, or unset STRIPE_SECRET_KEY for demo checkout."}
+      </div>
+    );
+  }
+
+  if (payMode === "stripe" && !payoutsEnabled) {
+    return (
+      <div className="mt-8">
+        <div className="grid grid-cols-3 gap-2">
+          {PRESETS.map((cents) => (
+            <div
+              key={cents}
+              className="rounded-2xl border border-line bg-card py-4 text-center text-lg font-semibold text-muted"
+            >
+              {formatUsd(cents)}
+            </div>
+          ))}
+        </div>
+        <div className="mt-2 w-full rounded-2xl border border-dashed border-line bg-card py-4 text-center text-sm text-muted">
+          Custom amount
+        </div>
+        <div className="mt-6 rounded-2xl border border-gold/50 bg-gold/15 px-4 py-3 text-sm leading-6">
+          This QR is not live yet. {name} still needs to finish Stripe Connect
+          Express onboarding so payouts can be received.
+        </div>
+      </div>
+    );
+  }
+
+  if (step === "pay" && amountCents && payMode === "demo") {
     return (
       <form
         onSubmit={(event) => {
@@ -82,8 +152,8 @@ export function TipCheckout({ code, name }: { code: string; name: string }) {
         className="mt-8 space-y-4"
       >
         <div className="rounded-2xl border border-gold/50 bg-gold/15 px-4 py-3 text-sm">
-          <strong>Demo checkout.</strong> Fill in the fields to see the pay
-          step. Nothing is charged.
+          <strong>Demo checkout.</strong> Stripe keys are not set, so this
+          records a local tip only. Nothing is charged.
         </div>
         <div className="rounded-2xl border border-line bg-card p-4">
           <p className="text-sm text-muted">You are tipping {name}</p>
@@ -214,12 +284,21 @@ export function TipCheckout({ code, name }: { code: string; name: string }) {
       <button
         type="button"
         onClick={continueToPay}
-        className="mt-6 w-full rounded-full bg-teal py-3.5 text-sm font-semibold text-white hover:bg-teal-deep"
+        disabled={pending}
+        className="mt-6 w-full rounded-full bg-teal py-3.5 text-sm font-semibold text-white hover:bg-teal-deep disabled:opacity-60"
       >
-        Continue to pay
+        {pending
+          ? "Opening Checkout…"
+          : stripeLive && amountCents
+            ? `Pay ${formatUsd(amountCents)}`
+            : stripeLive
+              ? "Pay"
+              : "Continue to pay"}
       </button>
       <p className="mt-4 text-center text-xs leading-5 text-muted">
-        No guest account. globotips.com/tip/{code}
+        {stripeLive
+          ? "Apple Pay, Google Pay, or card via Stripe Checkout. No guest account."
+          : `No guest account. globotips.com/tip/${code}`}
       </p>
     </div>
   );

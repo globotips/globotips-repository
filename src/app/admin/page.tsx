@@ -6,7 +6,13 @@ import { getSessionHotel } from "@/lib/auth";
 import { displayTipLink } from "@/lib/config";
 import { prisma } from "@/lib/db";
 import { dayKey, formatDayLabel, formatUsd } from "@/lib/money";
-import { addEmployeeAction, logoutAction, removeEmployeeAction } from "./actions";
+import { getStripeMode } from "@/lib/stripe-mode";
+import {
+  addEmployeeAction,
+  logoutAction,
+  removeEmployeeAction,
+  startEmployeeOnboardingAction,
+} from "./actions";
 
 export const metadata = {
   title: "Hotel dashboard",
@@ -17,17 +23,19 @@ export const dynamic = "force-dynamic";
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams: Promise<{ staffError?: string }>;
+  searchParams: Promise<{ staffError?: string; connect?: string }>;
 }) {
   const hotel = await getSessionHotel();
   if (!hotel) {
     redirect("/login");
   }
 
-  const { staffError } = await searchParams;
+  const { staffError, connect } = await searchParams;
+  const stripeMode = getStripeMode();
+  const stripeTest = stripeMode.kind === "test";
   const employees = await prisma.employee.findMany({
     where: { hotelId: hotel.id },
-    include: { tips: true },
+    include: { tips: { where: { status: "paid" } } },
     orderBy: { name: "asc" },
   });
 
@@ -47,6 +55,8 @@ export default async function AdminPage({
       tipCode: employee.tipCode,
       tipCount: employee.tips.length,
       totalCents: cents,
+      payoutsEnabled: employee.payoutsEnabled,
+      hasStripeAccount: Boolean(employee.stripeAccountId),
     };
   });
 
@@ -58,7 +68,7 @@ export default async function AdminPage({
 
   return (
     <div className="min-h-full">
-      <DemoBanner />
+      <DemoBanner stripeMode={stripeMode} />
       <header className="border-b border-line bg-card/80">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-4">
           <Link href="/">
@@ -85,9 +95,29 @@ export default async function AdminPage({
           shown. The hotel never holds money.
         </p>
 
+        {connect === "live" ? (
+          <p className="mt-4 rounded-xl border border-teal/30 bg-teal/10 px-4 py-3 text-sm text-teal-deep">
+            Stripe Connect onboarding is complete. That QR is live and can
+            receive tips.
+          </p>
+        ) : null}
+        {connect === "pending" ? (
+          <p className="mt-4 rounded-xl border border-gold/50 bg-gold/15 px-4 py-3 text-sm">
+            Onboarding was saved, but payouts are not enabled yet. Continue
+            Stripe Connect for that employee. The QR stays inactive until they
+            can receive payouts.
+          </p>
+        ) : null}
+        {connect === "error" || staffError === "stripe" ? (
+          <p className="mt-4 rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
+            Stripe Connect could not be started. Check the test keys and try
+            onboarding again from the employee row.
+          </p>
+        ) : null}
+
         <section className="mt-8 grid gap-4 sm:grid-cols-2">
           <div className="rounded-2xl border border-line bg-card p-5">
-            <p className="text-sm text-muted">All demo tips</p>
+            <p className="text-sm text-muted">All paid tips</p>
             <p className="mt-1 font-display text-3xl">{formatUsd(grandTotal)}</p>
           </div>
           <div className="rounded-2xl border border-line bg-card p-5">
@@ -102,6 +132,9 @@ export default async function AdminPage({
             <p className="mt-1 text-sm text-muted">
               Adding an employee creates a unique tip code and a downloadable QR
               that points at <span className="text-ink">/tip/{"{code}"}</span>.
+              {stripeTest
+                ? " With Stripe test keys, add also starts Connect Express onboarding. The QR is live only after the worker can receive payouts."
+                : null}
             </p>
             {staffError === "name" ? (
               <p className="mt-4 text-sm text-danger" role="alert">
@@ -138,6 +171,13 @@ export default async function AdminPage({
                       <p className="mt-1 text-sm text-muted">
                         {displayTipLink(employee.tipCode)}
                       </p>
+                      {stripeTest ? (
+                        <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-teal">
+                          {employee.payoutsEnabled
+                            ? "QR live"
+                            : "QR not live — payouts not enabled"}
+                        </p>
+                      ) : null}
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <a
@@ -146,6 +186,19 @@ export default async function AdminPage({
                       >
                         Download QR
                       </a>
+                      {stripeTest && !employee.payoutsEnabled ? (
+                        <form action={startEmployeeOnboardingAction}>
+                          <input type="hidden" name="id" value={employee.id} />
+                          <button
+                            type="submit"
+                            className="rounded-full border border-teal/40 px-3 py-1.5 text-sm font-semibold text-teal hover:bg-teal/10"
+                          >
+                            {employee.hasStripeAccount
+                              ? "Continue Stripe"
+                              : "Start Stripe"}
+                          </button>
+                        </form>
+                      ) : null}
                       <form action={removeEmployeeAction}>
                         <input type="hidden" name="id" value={employee.id} />
                         <button

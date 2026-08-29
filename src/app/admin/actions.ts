@@ -3,10 +3,16 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { SESSION_COOKIE } from "@/lib/config";
+import { resolveAppOrigin } from "@/lib/app-origin";
 import { getSessionHotel, sessionCookieOptions, verifyHotelLogin } from "@/lib/auth";
+import { SESSION_COOKIE } from "@/lib/config";
 import { prisma } from "@/lib/db";
 import { createSessionToken } from "@/lib/session";
+import {
+  createAccountOnboardingLink,
+  createExpressAccount,
+} from "@/lib/stripe";
+import { getStripeMode } from "@/lib/stripe-mode";
 import { createUniqueTipCode } from "@/lib/tip-code";
 
 export async function loginAction(formData: FormData) {
@@ -27,6 +33,35 @@ export async function logoutAction() {
   redirect("/login");
 }
 
+async function startOnboardingRedirect(employeeId: string, hotelId: string) {
+  const employee = await prisma.employee.findFirst({
+    where: { id: employeeId, hotelId },
+  });
+  if (!employee) {
+    redirect("/admin?connect=error");
+  }
+
+  let onboardingUrl: string;
+  try {
+    let stripeAccountId = employee.stripeAccountId;
+    if (!stripeAccountId) {
+      stripeAccountId = await createExpressAccount(employee);
+      await prisma.employee.update({
+        where: { id: employee.id },
+        data: { stripeAccountId },
+      });
+    }
+    onboardingUrl = await createAccountOnboardingLink(
+      stripeAccountId,
+      await resolveAppOrigin(),
+      employee.id,
+    );
+  } catch {
+    redirect("/admin?connect=error");
+  }
+  redirect(onboardingUrl);
+}
+
 export async function addEmployeeAction(formData: FormData) {
   const hotel = await getSessionHotel();
   if (!hotel) {
@@ -37,7 +72,7 @@ export async function addEmployeeAction(formData: FormData) {
     redirect("/admin?staffError=name");
   }
   const tipCode = await createUniqueTipCode(name);
-  await prisma.employee.create({
+  const employee = await prisma.employee.create({
     data: {
       hotelId: hotel.id,
       name,
@@ -45,6 +80,25 @@ export async function addEmployeeAction(formData: FormData) {
     },
   });
   revalidatePath("/admin");
+
+  if (getStripeMode().kind === "test") {
+    await startOnboardingRedirect(employee.id, hotel.id);
+  }
+}
+
+export async function startEmployeeOnboardingAction(formData: FormData) {
+  const hotel = await getSessionHotel();
+  if (!hotel) {
+    redirect("/login");
+  }
+  if (getStripeMode().kind !== "test") {
+    redirect("/admin?connect=error");
+  }
+  const id = String(formData.get("id") ?? "");
+  if (!id) {
+    redirect("/admin");
+  }
+  await startOnboardingRedirect(id, hotel.id);
 }
 
 export async function removeEmployeeAction(formData: FormData) {
@@ -60,23 +114,4 @@ export async function removeEmployeeAction(formData: FormData) {
     where: { id, hotelId: hotel.id },
   });
   revalidatePath("/admin");
-}
-
-export async function recordDemoTipAction(code: string, amountCents: number) {
-  if (!code || !Number.isInteger(amountCents) || amountCents < 100) {
-    return { ok: false as const, error: "Choose a tip of at least $1." };
-  }
-  const employee = await prisma.employee.findUnique({
-    where: { tipCode: code },
-  });
-  if (!employee) {
-    return { ok: false as const, error: "This tip page is not available." };
-  }
-  await prisma.tip.create({
-    data: {
-      employeeId: employee.id,
-      amountCents,
-    },
-  });
-  return { ok: true as const, amountCents };
 }

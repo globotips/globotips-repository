@@ -58,15 +58,15 @@ async function main() {
     const [maria, james, elena] = employees;
     await prisma.tip.createMany({
       data: [
-        { employeeId: maria.id, amountCents: 1000, createdAt: daysAgo(4, 11) },
-        { employeeId: maria.id, amountCents: 500, createdAt: daysAgo(3, 16) },
-        { employeeId: maria.id, amountCents: 2000, createdAt: daysAgo(1, 9) },
-        { employeeId: james.id, amountCents: 2000, createdAt: daysAgo(4, 14) },
-        { employeeId: james.id, amountCents: 1000, createdAt: daysAgo(2, 18) },
-        { employeeId: james.id, amountCents: 500, createdAt: daysAgo(0, 10) },
-        { employeeId: elena.id, amountCents: 2000, createdAt: daysAgo(3, 12) },
-        { employeeId: elena.id, amountCents: 1000, createdAt: daysAgo(1, 19) },
-        { employeeId: elena.id, amountCents: 2000, createdAt: daysAgo(0, 8) },
+        { employeeId: maria.id, amountCents: 1000, platformFeeCents: 30, createdAt: daysAgo(4, 11) },
+        { employeeId: maria.id, amountCents: 500, platformFeeCents: 15, createdAt: daysAgo(3, 16) },
+        { employeeId: maria.id, amountCents: 2000, platformFeeCents: 60, createdAt: daysAgo(1, 9) },
+        { employeeId: james.id, amountCents: 2000, platformFeeCents: 60, createdAt: daysAgo(4, 14) },
+        { employeeId: james.id, amountCents: 1000, platformFeeCents: 30, createdAt: daysAgo(2, 18) },
+        { employeeId: james.id, amountCents: 500, platformFeeCents: 15, createdAt: daysAgo(0, 10) },
+        { employeeId: elena.id, amountCents: 2000, platformFeeCents: 60, createdAt: daysAgo(3, 12) },
+        { employeeId: elena.id, amountCents: 1000, platformFeeCents: 30, createdAt: daysAgo(1, 19) },
+        { employeeId: elena.id, amountCents: 2000, platformFeeCents: 60, createdAt: daysAgo(0, 8) },
       ],
     });
   }
