@@ -19,5 +19,5 @@ jobs:
       - run: npm run lint
       - run: npm run build
         env:
-          DATABASE_URL: file:./ci.db
+          DATABASE_URL: postgresql://ci:ci@127.0.0.1:5432/ci?schema=public
           SESSION_SECRET: ci-session-secret-not-for-production

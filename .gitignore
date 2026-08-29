@@ -33,7 +33,7 @@ yarn-error.log*
 .env.local
 .env.*.local
 
-# local SQLite
+# leftover local SQLite files (no longer used)
 /prisma/*.db
 /prisma/*.db-journal
 

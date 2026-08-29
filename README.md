@@ -10,10 +10,16 @@ Public links are written as `globotips.com/tip/{code}`. In live mode, Stripe Acc
 
 ## Run locally
 
-You need Node.js 20+.
+You need Node.js 20+ and a PostgreSQL `DATABASE_URL`. SQLite (`file:./dev.db`) is not supported.
+
+The laptop demo does not need Docker. Use either:
+
+- a free Neon / Vercel Postgres connection string (same shape as production), or
+- Postgres you already have on the machine (Postgres.app, Homebrew, or the installer)
 
 ```bash
 cp .env.example .env
+# Set DATABASE_URL in .env to postgresql://...
 npm install
 npm run db:setup
 npm run dev
@@ -21,9 +27,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-`db:setup` creates a local SQLite file at `prisma/dev.db`, generates the Prisma client, and seeds one Tampa hotel plus three employees.
-
-If you already had a local database from Phase 1, run `npx prisma db push` after pulling so the Connect columns exist.
+`db:setup` generates the Prisma client, applies the schema (`prisma db push`), and seeds one Tampa hotel plus three employees. If you still have an old `prisma/dev.db` from SQLite, it is unused — point `.env` at Postgres and run `db:setup` again.
 
 ## Demo hotel login
 
@@ -77,7 +81,7 @@ Set these **on the host** (never in git, never as committed files):
 | `NODE_ENV` | `production` |
 | `STRIPE_MODE` | `live` |
 | `SESSION_SECRET` | long random string |
-| `DATABASE_URL` | persistent database URL the host provides |
+| `DATABASE_URL` | Neon / Vercel Postgres `postgresql://...` URL (see below). Never commit credentials. |
 | `TIP_QR_ORIGIN` | `https://www.globotips.com` |
 | `STRIPE_SECRET_KEY` | `sk_live_...` (host env only) |
 | `STRIPE_PUBLISHABLE_KEY` | `pk_live_...` (host env only) |
@@ -86,6 +90,23 @@ Set these **on the host** (never in git, never as committed files):
 | `STRIPE_CONNECT_CLIENT_ID` | optional (`ca_...`) |
 
 Both flags are required. `STRIPE_MODE=live` without `NODE_ENV=production` still rejects live keys. `NODE_ENV=production` without `STRIPE_MODE=live` still rejects live keys.
+
+### Production database on Vercel
+
+SQLite will not persist on Vercel serverless. Production (and preview, if those deploys should store data) needs a Postgres `DATABASE_URL`.
+
+1. Create a Neon or Vercel Postgres database (Vercel Dashboard → Storage, or Neon’s console). Copy the `postgresql://...` connection string. Do not put it in git.
+2. In the Vercel project **globotips** (team **globo-tips**): Settings → Environment Variables. Add `DATABASE_URL` with that URL. Scope it to **Production**. Add it to **Preview** too if preview deployments should use a database (a Neon branch is fine).
+3. If Neon injects `POSTGRES_URL` / `POSTGRES_PRISMA_URL` instead, still set `DATABASE_URL` — that is the name this app reads. A standard `postgresql://` URL is enough; this app does not use Neon-only APIs.
+4. Apply the Prisma schema once against that URL (from a machine that has the URL in the environment, never from a committed file):
+
+```bash
+npx prisma db push
+```
+
+If `db push` fails with a prepared-statement or pgbouncer error, use Neon’s **direct** (non-`-pooler`) connection string for that command. The app runtime can keep using the pooled URL.
+
+Do not run `npm run db:seed` against production unless you want the Tampa demo hotel there. Redeploy after the env var is saved so the functions pick it up. This repo does not deploy for you.
 
 In live mode, Stripe Account Links use:
 
@@ -117,4 +138,4 @@ Worker mobile app, multi-rail payouts (Pix / Wise / SEPA), delayed tipping, NFC,
 
 ## Stack
 
-Next.js (App Router), Prisma, SQLite, Stripe. SQLite is for local demo; production needs a persistent `DATABASE_URL` on the host.
+Next.js (App Router), Prisma, PostgreSQL, Stripe. Local demo and production both use a `postgresql://` `DATABASE_URL`. Production should use Neon / Vercel Postgres so data persists on Vercel serverless.
