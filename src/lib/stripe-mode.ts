@@ -26,8 +26,8 @@ function firstNonEmpty(...values: Array<string | undefined>): string | undefined
 }
 
 export function liveFlagsEnabled(
-  stripeModeFlag = process.env.STRIPE_MODE,
-  nodeEnv = process.env.NODE_ENV,
+  stripeModeFlag: string | undefined = process.env.STRIPE_MODE,
+  nodeEnv: string | undefined = process.env.NODE_ENV,
 ): boolean {
   return stripeModeFlag?.trim().toLowerCase() === "live" && nodeEnv === "production";
 }
@@ -37,9 +37,9 @@ export function isStripeEnabled(mode: StripeMode): boolean {
 }
 
 export function inspectStripeSecretKey(
-  secret = process.env.STRIPE_SECRET_KEY,
-  stripeModeFlag = process.env.STRIPE_MODE,
-  nodeEnv = process.env.NODE_ENV,
+  secret: string | undefined = process.env.STRIPE_SECRET_KEY,
+  stripeModeFlag: string | undefined = process.env.STRIPE_MODE,
+  nodeEnv: string | undefined = process.env.NODE_ENV,
 ): StripeMode {
   const key = secret?.trim();
   if (!key) {
@@ -65,10 +65,10 @@ export function inspectStripeSecretKey(
 }
 
 export function inspectStripePublishableKeys(
-  publishable = process.env.STRIPE_PUBLISHABLE_KEY,
-  publicPublishable = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
-  stripeModeFlag = process.env.STRIPE_MODE,
-  nodeEnv = process.env.NODE_ENV,
+  publishable: string | undefined = process.env.STRIPE_PUBLISHABLE_KEY,
+  publicPublishable: string | undefined = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+  stripeModeFlag: string | undefined = process.env.STRIPE_MODE,
+  nodeEnv: string | undefined = process.env.NODE_ENV,
 ): StripeMode {
   const key = firstNonEmpty(publishable, publicPublishable);
   if (!key) {
