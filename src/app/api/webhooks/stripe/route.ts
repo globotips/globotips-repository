@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { getStripe, recordPaidCheckoutSession, syncEmployeeByStripeAccountId } from "@/lib/stripe";
-import { getStripeMode } from "@/lib/stripe-mode";
+import { getStripeMode, isStripeEnabled } from "@/lib/stripe-mode";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   const mode = getStripeMode();
-  if (mode.kind !== "test") {
+  if (!isStripeEnabled(mode)) {
     return NextResponse.json(
-      { error: "Stripe webhooks are only accepted in test mode." },
+      { error: "Stripe webhooks are only accepted when Stripe is configured." },
       { status: 503 },
     );
   }

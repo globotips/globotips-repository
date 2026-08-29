@@ -13,6 +13,7 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.globotips.com"),
   title: {
     default: "GloboTips",
     template: "%s · GloboTips",

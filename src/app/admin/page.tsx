@@ -6,7 +6,7 @@ import { getSessionHotel } from "@/lib/auth";
 import { displayTipLink } from "@/lib/config";
 import { prisma } from "@/lib/db";
 import { dayKey, formatDayLabel, formatUsd } from "@/lib/money";
-import { getStripeMode } from "@/lib/stripe-mode";
+import { getStripeMode, isStripeEnabled } from "@/lib/stripe-mode";
 import {
   addEmployeeAction,
   logoutAction,
@@ -32,7 +32,7 @@ export default async function AdminPage({
 
   const { staffError, connect } = await searchParams;
   const stripeMode = getStripeMode();
-  const stripeTest = stripeMode.kind === "test";
+  const stripeReady = isStripeEnabled(stripeMode);
   const employees = await prisma.employee.findMany({
     where: { hotelId: hotel.id },
     include: { tips: { where: { status: "paid" } } },
@@ -110,7 +110,7 @@ export default async function AdminPage({
         ) : null}
         {connect === "error" || staffError === "stripe" ? (
           <p className="mt-4 rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger">
-            Stripe Connect could not be started. Check the test keys and try
+            Stripe Connect could not be started. Check the Stripe keys and try
             onboarding again from the employee row.
           </p>
         ) : null}
@@ -132,8 +132,8 @@ export default async function AdminPage({
             <p className="mt-1 text-sm text-muted">
               Adding an employee creates a unique tip code and a downloadable QR
               that points at <span className="text-ink">/tip/{"{code}"}</span>.
-              {stripeTest
-                ? " With Stripe test keys, add also starts Connect Express onboarding. The QR is live only after the worker can receive payouts."
+              {stripeReady
+                ? " Adding a worker also starts Connect Express onboarding. The QR is live only after the worker can receive payouts."
                 : null}
             </p>
             {staffError === "name" ? (
@@ -171,7 +171,7 @@ export default async function AdminPage({
                       <p className="mt-1 text-sm text-muted">
                         {displayTipLink(employee.tipCode)}
                       </p>
-                      {stripeTest ? (
+                      {stripeReady ? (
                         <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-teal">
                           {employee.payoutsEnabled
                             ? "QR live"
@@ -186,7 +186,7 @@ export default async function AdminPage({
                       >
                         Download QR
                       </a>
-                      {stripeTest && !employee.payoutsEnabled ? (
+                      {stripeReady && !employee.payoutsEnabled ? (
                         <form action={startEmployeeOnboardingAction}>
                           <input type="hidden" name="id" value={employee.id} />
                           <button

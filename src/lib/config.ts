@@ -1,5 +1,11 @@
 export const PUBLIC_TIP_HOST = "globotips.com";
 
+/** Canonical public origin for live-mode Stripe return, refresh, success, and cancel URLs. */
+export const LIVE_PUBLIC_ORIGIN = "https://www.globotips.com";
+
+/** Stripe webhook path on the public host. */
+export const STRIPE_WEBHOOK_PATH = "/api/webhooks/stripe";
+
 export function displayTipLink(code: string): string {
   return `${PUBLIC_TIP_HOST}/tip/${code}`;
 }

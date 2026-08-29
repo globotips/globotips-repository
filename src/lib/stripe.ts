@@ -1,14 +1,19 @@
 import Stripe from "stripe";
 import type { Employee } from "@prisma/client";
+import { stripeRedirectOrigin } from "@/lib/stripe-origin";
 import { prisma } from "@/lib/db";
 import { platformFeeCents } from "@/lib/platform-fee";
-import { getStripeMode } from "@/lib/stripe-mode";
+import { getStripeMode, isStripeEnabled } from "@/lib/stripe-mode";
 
 const globalForStripe = globalThis as unknown as { stripe?: Stripe };
 
+function checkoutOrigin(requestedOrigin: string): string {
+  return stripeRedirectOrigin(getStripeMode(), requestedOrigin);
+}
+
 export function getStripe(): Stripe {
   const mode = getStripeMode();
-  if (mode.kind !== "test") {
+  if (!isStripeEnabled(mode)) {
     throw new Error(
       mode.kind === "blocked"
         ? mode.reason
@@ -94,14 +99,15 @@ export async function createAccountOnboardingLink(
   employeeId: string,
 ): Promise<string> {
   const stripe = getStripe();
+  const publicOrigin = checkoutOrigin(origin);
   const link = await stripe.v2.core.accountLinks.create({
     account: stripeAccountId,
     use_case: {
       type: "account_onboarding",
       account_onboarding: {
         configurations: ["recipient"],
-        refresh_url: `${origin}/admin/connect/refresh?employee=${encodeURIComponent(employeeId)}`,
-        return_url: `${origin}/admin/connect/return?employee=${encodeURIComponent(employeeId)}`,
+        refresh_url: `${publicOrigin}/admin/connect/refresh?employee=${encodeURIComponent(employeeId)}`,
+        return_url: `${publicOrigin}/admin/connect/return?employee=${encodeURIComponent(employeeId)}`,
       },
     },
   });
@@ -205,8 +211,8 @@ export async function createTipCheckoutSession(input: {
       amountCents: String(amountCents),
       platformFeeCents: String(fee),
     },
-    success_url: `${origin}/tip/${encodeURIComponent(employee.tipCode)}?paid=1&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${origin}/tip/${encodeURIComponent(employee.tipCode)}?canceled=1`,
+    success_url: `${checkoutOrigin(origin)}/tip/${encodeURIComponent(employee.tipCode)}?paid=1&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${checkoutOrigin(origin)}/tip/${encodeURIComponent(employee.tipCode)}?canceled=1`,
   });
   if (!session.url) {
     throw new Error("Stripe Checkout did not return a URL.");

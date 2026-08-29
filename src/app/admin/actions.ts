@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { resolveAppOrigin } from "@/lib/app-origin";
+import { resolveStripeRedirectOrigin } from "@/lib/app-origin";
 import { getSessionHotel, sessionCookieOptions, verifyHotelLogin } from "@/lib/auth";
 import { SESSION_COOKIE } from "@/lib/config";
 import { prisma } from "@/lib/db";
@@ -12,7 +12,7 @@ import {
   createAccountOnboardingLink,
   createExpressAccount,
 } from "@/lib/stripe";
-import { getStripeMode } from "@/lib/stripe-mode";
+import { getStripeMode, isStripeEnabled } from "@/lib/stripe-mode";
 import { createUniqueTipCode } from "@/lib/tip-code";
 
 export async function loginAction(formData: FormData) {
@@ -53,7 +53,7 @@ async function startOnboardingRedirect(employeeId: string, hotelId: string) {
     }
     onboardingUrl = await createAccountOnboardingLink(
       stripeAccountId,
-      await resolveAppOrigin(),
+      await resolveStripeRedirectOrigin(),
       employee.id,
     );
   } catch {
@@ -81,7 +81,7 @@ export async function addEmployeeAction(formData: FormData) {
   });
   revalidatePath("/admin");
 
-  if (getStripeMode().kind === "test") {
+  if (isStripeEnabled(getStripeMode())) {
     await startOnboardingRedirect(employee.id, hotel.id);
   }
 }
@@ -91,7 +91,7 @@ export async function startEmployeeOnboardingAction(formData: FormData) {
   if (!hotel) {
     redirect("/login");
   }
-  if (getStripeMode().kind !== "test") {
+  if (!isStripeEnabled(getStripeMode())) {
     redirect("/admin?connect=error");
   }
   const id = String(formData.get("id") ?? "");

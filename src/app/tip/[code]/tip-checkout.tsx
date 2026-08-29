@@ -14,6 +14,7 @@ export function TipCheckout({
   code,
   name,
   payMode,
+  stripeKind = "test",
   payoutsEnabled,
   blockedReason,
   initialPaidCents = null,
@@ -22,6 +23,7 @@ export function TipCheckout({
   code: string;
   name: string;
   payMode: TipPayMode;
+  stripeKind?: "test" | "live";
   payoutsEnabled: boolean;
   blockedReason?: string;
   initialPaidCents?: number | null;
@@ -92,7 +94,9 @@ export function TipCheckout({
         <p className="mt-3 text-lg">{formatUsd(paidCents)}</p>
         <p className="mt-4 text-sm leading-6 text-muted">
           {payMode === "stripe"
-            ? "Paid through Stripe Checkout in test mode. The guest was not surcharged. GloboTips keeps 3% from the tip."
+            ? stripeKind === "live"
+              ? "Paid through Stripe Checkout. The guest was not surcharged. GloboTips keeps 3% from the tip. The hotel never holds money."
+              : "Paid through Stripe Checkout in test mode. The guest was not surcharged. GloboTips keeps 3% from the tip."
             : "This was demo mode. No card was charged and no real money moved."}
         </p>
         <button
@@ -113,7 +117,7 @@ export function TipCheckout({
     return (
       <div className="mt-8 rounded-2xl border border-danger/30 bg-danger/10 p-5 text-sm leading-6 text-danger">
         {blockedReason ??
-          "Stripe is blocked. Use test keys only, or unset STRIPE_SECRET_KEY for demo checkout."}
+          "Stripe is blocked. Use sk_test_ locally, or set STRIPE_MODE=live and NODE_ENV=production on the host for live keys."}
       </div>
     );
   }
