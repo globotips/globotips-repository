@@ -38,25 +38,46 @@ export function splitPersonName(name: string): { firstName: string; lastName: st
   return { firstName: parts[0], lastName: parts.slice(1).join(" ") };
 }
 
+function staffContactEmail(employee: Employee): string {
+  const local = employee.tipCode.replace(/[^a-z0-9]+/gi, ".").replace(/^\.+|\.+$/g, "");
+  return `${local || "staff"}@staff.globotips.com`;
+}
+
 export async function createExpressAccount(employee: Employee): Promise<string> {
   const stripe = getStripe();
   const { firstName, lastName } = splitPersonName(employee.name);
-  const account = await stripe.accounts.create({
-    type: "express",
-    country: "US",
-    business_type: "individual",
-    capabilities: {
-      card_payments: { requested: true },
-      transfers: { requested: true },
+  const account = await stripe.v2.core.accounts.create({
+    display_name: employee.name,
+    contact_email: staffContactEmail(employee),
+    dashboard: "express",
+    identity: {
+      country: "us",
+      entity_type: "individual",
+      individual: {
+        given_name: firstName,
+        surname: lastName,
+      },
     },
-    individual: {
-      first_name: firstName,
-      last_name: lastName,
+    configuration: {
+      recipient: {
+        capabilities: {
+          stripe_balance: {
+            stripe_transfers: { requested: true },
+          },
+        },
+      },
     },
-    business_profile: {
-      product_description:
-        "Receives guest tips as hotel staff through GloboTips.",
-      url: `https://globotips.com/tip/${employee.tipCode}`,
+    defaults: {
+      currency: "usd",
+      responsibilities: {
+        fees_collector: "application",
+        losses_collector: "application",
+      },
+      profile: {
+        product_description:
+          "Receives guest tips as hotel staff through GloboTips.",
+        business_url: `https://globotips.com/tip/${employee.tipCode}`,
+      },
     },
     metadata: {
       employeeId: employee.id,
@@ -73,29 +94,53 @@ export async function createAccountOnboardingLink(
   employeeId: string,
 ): Promise<string> {
   const stripe = getStripe();
-  const link = await stripe.accountLinks.create({
+  const link = await stripe.v2.core.accountLinks.create({
     account: stripeAccountId,
-    refresh_url: `${origin}/admin/connect/refresh?employee=${encodeURIComponent(employeeId)}`,
-    return_url: `${origin}/admin/connect/return?employee=${encodeURIComponent(employeeId)}`,
-    type: "account_onboarding",
+    use_case: {
+      type: "account_onboarding",
+      account_onboarding: {
+        configurations: ["recipient"],
+        refresh_url: `${origin}/admin/connect/refresh?employee=${encodeURIComponent(employeeId)}`,
+        return_url: `${origin}/admin/connect/return?employee=${encodeURIComponent(employeeId)}`,
+      },
+    },
   });
+  if (!link.url) {
+    throw new Error("Stripe did not return an onboarding URL.");
+  }
   return link.url;
 }
 
-export function accountCanReceiveTips(account: Stripe.Account): boolean {
-  return Boolean(account.charges_enabled && account.payouts_enabled);
+export function accountCanReceiveTips(
+  account: Stripe.V2.Core.Account,
+): boolean {
+  const balance = account.configuration?.recipient?.capabilities?.stripe_balance;
+  const transfers = balance?.stripe_transfers?.status;
+  const payouts = balance?.payouts?.status;
+  return transfers === "active" && payouts === "active";
+}
+
+export async function retrieveConnectAccount(
+  stripeAccountId: string,
+): Promise<Stripe.V2.Core.Account> {
+  const stripe = getStripe();
+  return stripe.v2.core.accounts.retrieve(stripeAccountId, {
+    include: ["configuration.recipient", "requirements", "identity"],
+  });
 }
 
 export async function syncEmployeeConnectStatus(employee: Employee): Promise<Employee> {
   if (!employee.stripeAccountId) {
     return employee;
   }
-  const stripe = getStripe();
-  const account = await stripe.accounts.retrieve(employee.stripeAccountId);
+  const account = await retrieveConnectAccount(employee.stripeAccountId);
+  const openRequirements = account.requirements?.entries?.some(
+    (entry) => entry.awaiting_action_from === "user",
+  );
   return prisma.employee.update({
     where: { id: employee.id },
     data: {
-      detailsSubmitted: Boolean(account.details_submitted),
+      detailsSubmitted: !openRequirements,
       payoutsEnabled: accountCanReceiveTips(account),
     },
   });
