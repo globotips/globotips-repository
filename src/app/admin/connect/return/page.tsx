@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSessionHotel } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { getStripeMode } from "@/lib/stripe-mode";
+import { getStripeMode, isStripeEnabled } from "@/lib/stripe-mode";
 import { syncEmployeeConnectStatus } from "@/lib/stripe";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +17,7 @@ export default async function ConnectReturnPage({
   }
 
   const mode = getStripeMode();
-  if (mode.kind !== "test") {
+  if (!isStripeEnabled(mode)) {
     redirect("/admin?connect=error");
   }
 

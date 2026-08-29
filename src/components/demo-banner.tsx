@@ -20,11 +20,25 @@ export function DemoBanner({
     );
   }
 
+  if (stripeMode?.kind === "live") {
+    if (compact) {
+      return null;
+    }
+    return (
+      <div className="border-b border-teal/30 bg-teal/10 text-center text-teal-deep px-4 py-2.5 text-sm">
+        <strong className="font-semibold">Stripe live mode.</strong> Real cards
+        are charged. GloboTips keeps 3% from the tip. The hotel never holds
+        money.
+      </div>
+    );
+  }
+
   if (stripeMode?.kind === "test") {
     return (
       <div className={className}>
         <strong className="font-semibold">Stripe test mode.</strong> Use test
-        cards and Express test onboarding. Live keys are rejected.
+        cards and Express test onboarding. Live keys need STRIPE_MODE=live and
+        NODE_ENV=production on the host.
       </div>
     );
   }

@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 import { getSessionHotel } from "@/lib/auth";
-import { resolveAppOrigin } from "@/lib/app-origin";
+import { resolveStripeRedirectOrigin } from "@/lib/app-origin";
 import { prisma } from "@/lib/db";
 import { createAccountOnboardingLink } from "@/lib/stripe";
-import { getStripeMode } from "@/lib/stripe-mode";
+import { getStripeMode, isStripeEnabled } from "@/lib/stripe-mode";
 
 export const dynamic = "force-dynamic";
 
@@ -13,7 +13,7 @@ export async function GET(request: Request) {
     redirect("/login");
   }
 
-  if (getStripeMode().kind !== "test") {
+  if (!isStripeEnabled(getStripeMode())) {
     redirect("/admin?connect=error");
   }
 
@@ -31,7 +31,7 @@ export async function GET(request: Request) {
 
   let url: string;
   try {
-    const origin = await resolveAppOrigin();
+    const origin = await resolveStripeRedirectOrigin();
     url = await createAccountOnboardingLink(
       employee.stripeAccountId,
       origin,

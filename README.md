@@ -2,9 +2,11 @@
 
 Cashless tipping for hotel staff and tour guides. Guests scan a QR with their phone camera. There is no guest app, guest account, or guest login.
 
-This repository is **Phase 1** plus **Stripe Connect in test mode**. When `STRIPE_SECRET_KEY` is unset, checkout stays a local demo and nothing is charged. When test keys are set, guests pay through Stripe Checkout and the tip is a destination charge to that worker’s Express account. GloboTips keeps 3% via `application_fee_amount`. The guest is not surcharged. The hotel never holds money.
+Founders: **Rosalie Dudkiewicz** and **Dariusz Dudkiewicz**.
 
-Public links are written as `globotips.com/tip/{code}`. The app itself can run on localhost or a preview host. **Do not deploy this to globotips.com from this PR. Do not use live Stripe keys.**
+When `STRIPE_SECRET_KEY` is unset, checkout stays a local demo and nothing is charged. When test keys are set, guests pay through Stripe Checkout and the tip is a destination charge to that worker’s Express account. In production, live keys are allowed only when `STRIPE_MODE=live` **and** `NODE_ENV=production` are set on the host. GloboTips keeps 3% via `application_fee_amount`. The guest is not surcharged. The hotel never holds money.
+
+Public links are written as `globotips.com/tip/{code}`. In live mode, Stripe Account Link return/refresh URLs and Checkout success/cancel URLs always use `https://www.globotips.com` (never localhost).
 
 ## Run locally
 
@@ -64,7 +66,40 @@ stripe listen --forward-to localhost:3000/api/webhooks/stripe
 
 The webhook `checkout.session.completed` records the paid tip. Returning from Checkout with `session_id` also records it (idempotent on the Checkout session id). `account.updated` refreshes whether that worker can receive payouts. If you create a Dashboard endpoint instead of the CLI, listen to those events on the platform and on connected accounts.
 
-`sk_live_` / `pk_live_` are rejected. The app will not take live charges.
+`sk_live_` / `pk_live_` are rejected on a laptop. A local `.env` cannot accidentally charge real cards.
+
+## Production (globotips.com, live cards)
+
+Set these **on the host** (never in git, never as committed files):
+
+| Variable | Production value |
+| --- | --- |
+| `NODE_ENV` | `production` |
+| `STRIPE_MODE` | `live` |
+| `SESSION_SECRET` | long random string |
+| `DATABASE_URL` | persistent database URL the host provides |
+| `TIP_QR_ORIGIN` | `https://www.globotips.com` |
+| `STRIPE_SECRET_KEY` | `sk_live_...` (host env only) |
+| `STRIPE_PUBLISHABLE_KEY` | `pk_live_...` (host env only) |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | `pk_live_...` (host env only) |
+| `STRIPE_WEBHOOK_SECRET` | `whsec_...` from the live endpoint |
+| `STRIPE_CONNECT_CLIENT_ID` | optional (`ca_...`) |
+
+Both flags are required. `STRIPE_MODE=live` without `NODE_ENV=production` still rejects live keys. `NODE_ENV=production` without `STRIPE_MODE=live` still rejects live keys.
+
+In live mode, Stripe Account Links use:
+
+- return: `https://www.globotips.com/admin/connect/return?employee=...`
+- refresh: `https://www.globotips.com/admin/connect/refresh?employee=...`
+
+Checkout uses:
+
+- success: `https://www.globotips.com/tip/{code}?paid=1&session_id={CHECKOUT_SESSION_ID}`
+- cancel: `https://www.globotips.com/tip/{code}?canceled=1`
+
+Point the live Stripe webhook at `https://www.globotips.com/api/webhooks/stripe` (`checkout.session.completed`, `checkout.session.async_payment_succeeded`, `account.updated`).
+
+Destination charges stay the same: `application_fee_amount` is 3% of the tip. The guest is not surcharged. The hotel never holds money.
 
 ## What is in this app
 
@@ -72,13 +107,14 @@ The webhook `checkout.session.completed` records the paid tip. Returning from Ch
 - Hotel admin at `/login` and `/admin`: add/remove employees, download QR PNGs, see **aggregate** totals by day and by employee
 - Guest tip page at `/tip/{code}`: name, photo placeholder, $5 / $10 / $20 / custom
 - Demo checkout when Stripe keys are missing
-- Stripe Checkout destination charges in test mode when keys are present
+- Stripe Checkout destination charges in test mode when test keys are present
+- Stripe Checkout destination charges in live mode when live keys and the production flags are set on the host
 - Stripe Connect Express onboarding from hotel admin
 
-## What is not in this PR
+## What is not in this app
 
-Worker mobile app, multi-rail payouts (Pix / Wise / SEPA), delayed tipping, NFC, Wallet passes, a front-desk pool code, tax add-on, production deploy, trademarks, or patents.
+Worker mobile app, multi-rail payouts (Pix / Wise / SEPA), delayed tipping, NFC, Wallet passes, a front-desk pool code, tax add-on, trademarks, or patents.
 
 ## Stack
 
-Next.js (App Router), Prisma, SQLite, Stripe (test mode). SQLite is for local demo only.
+Next.js (App Router), Prisma, SQLite, Stripe. SQLite is for local demo; production needs a persistent `DATABASE_URL` on the host.

@@ -43,7 +43,12 @@ export default async function TipPage({
 
   const mode = getStripeMode();
   const payMode: TipPayMode =
-    mode.kind === "test" ? "stripe" : mode.kind === "blocked" ? "blocked" : "demo";
+    mode.kind === "test" || mode.kind === "live"
+      ? "stripe"
+      : mode.kind === "blocked"
+        ? "blocked"
+        : "demo";
+  const stripeKind = mode.kind === "live" ? "live" : "test";
 
   let initialPaidCents: number | null = null;
   if (payMode === "stripe" && query.session_id) {
@@ -75,6 +80,7 @@ export default async function TipPage({
           code={employee.tipCode}
           name={employee.name}
           payMode={payMode}
+          stripeKind={stripeKind}
           payoutsEnabled={employee.payoutsEnabled}
           blockedReason={mode.kind === "blocked" ? mode.reason : undefined}
           initialPaidCents={initialPaidCents}

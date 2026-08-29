@@ -1,17 +1,17 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { resolveAppOrigin } from "@/lib/app-origin";
+import { resolveStripeRedirectOrigin } from "@/lib/app-origin";
 import { prisma } from "@/lib/db";
 import { MIN_TIP_CENTS, platformFeeCents } from "@/lib/platform-fee";
 import { createTipCheckoutSession } from "@/lib/stripe";
-import { getStripeMode } from "@/lib/stripe-mode";
+import { getStripeMode, isStripeEnabled } from "@/lib/stripe-mode";
 
 export async function recordDemoTipAction(code: string, amountCents: number) {
   if (getStripeMode().kind !== "demo") {
     return {
       ok: false as const,
-      error: "Demo checkout is off while Stripe test keys are configured.",
+      error: "Demo checkout is off while Stripe keys are configured.",
     };
   }
   if (!code || !Number.isInteger(amountCents) || amountCents < MIN_TIP_CENTS) {
@@ -39,10 +39,11 @@ export async function startCheckoutAction(code: string, amountCents: number) {
   if (mode.kind === "blocked") {
     return { ok: false as const, error: mode.reason };
   }
-  if (mode.kind !== "test") {
+  if (!isStripeEnabled(mode)) {
     return {
       ok: false as const,
-      error: "Stripe test keys are not set. Use demo checkout, or add sk_test_ keys.",
+      error:
+        "Stripe keys are not set. Use demo checkout locally, or add sk_test_ keys. Live keys require STRIPE_MODE=live and NODE_ENV=production on the host.",
     };
   }
   if (!code || !Number.isInteger(amountCents) || amountCents < MIN_TIP_CENTS) {
@@ -66,12 +67,12 @@ export async function startCheckoutAction(code: string, amountCents: number) {
     url = await createTipCheckoutSession({
       employee,
       amountCents,
-      origin: await resolveAppOrigin(),
+      origin: await resolveStripeRedirectOrigin(),
     });
   } catch {
     return {
       ok: false as const,
-      error: "Stripe Checkout could not be started. Check the test keys and try again.",
+      error: "Stripe Checkout could not be started. Check the Stripe keys and try again.",
     };
   }
   redirect(url);
