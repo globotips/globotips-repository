@@ -5,6 +5,7 @@ import { PhotoPlaceholder } from "@/components/photo-placeholder";
 import { prisma } from "@/lib/db";
 import { confirmCheckoutSessionForTip } from "@/lib/stripe";
 import { getStripeMode } from "@/lib/stripe-mode";
+import { parseTipCheckoutPayError } from "@/lib/tip-checkout";
 import { TipCheckout, type TipPayMode } from "./tip-checkout";
 
 export const dynamic = "force-dynamic";
@@ -29,7 +30,12 @@ export default async function TipPage({
   searchParams,
 }: {
   params: Promise<{ code: string }>;
-  searchParams: Promise<{ session_id?: string; paid?: string; canceled?: string }>;
+  searchParams: Promise<{
+    session_id?: string;
+    paid?: string;
+    canceled?: string;
+    pay_error?: string;
+  }>;
 }) {
   const { code } = await params;
   const query = await searchParams;
@@ -85,6 +91,7 @@ export default async function TipPage({
           blockedReason={mode.kind === "blocked" ? mode.reason : undefined}
           initialPaidCents={initialPaidCents}
           canceled={query.canceled === "1"}
+          payError={parseTipCheckoutPayError(query.pay_error)}
         />
       </main>
     </div>

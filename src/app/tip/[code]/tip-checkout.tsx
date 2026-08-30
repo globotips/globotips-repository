@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { recordDemoTipAction, startCheckoutAction } from "@/app/tip/[code]/actions";
+import { useEffect, useState, type FormEvent } from "react";
+import { recordDemoTipAction } from "@/app/tip/[code]/actions";
 import { formatUsd, parseUsdToCents } from "@/lib/money";
+import { TIP_CHECKOUT_PATH } from "@/lib/tip-checkout";
 
 const PRESETS = [500, 1000, 2000];
 
@@ -19,6 +20,7 @@ export function TipCheckout({
   blockedReason,
   initialPaidCents = null,
   canceled = false,
+  payError = null,
 }: {
   code: string;
   name: string;
@@ -28,12 +30,13 @@ export function TipCheckout({
   blockedReason?: string;
   initialPaidCents?: number | null;
   canceled?: boolean;
+  payError?: string | null;
 }) {
   const [step, setStep] = useState<Step>(initialPaidCents ? "done" : "amount");
   const [preset, setPreset] = useState<number | "custom" | null>(1000);
   const [custom, setCustom] = useState("");
   const [error, setError] = useState<string | null>(
-    canceled ? "Checkout was canceled. Choose an amount to try again." : null,
+    payError ?? (canceled ? "Checkout was canceled. Choose an amount to try again." : null),
   );
   const [pending, setPending] = useState(false);
   const [paidCents, setPaidCents] = useState<number | null>(initialPaidCents);
@@ -42,27 +45,43 @@ export function TipCheckout({
     preset === "custom" ? parseUsdToCents(custom) : preset;
   const stripeLive = payMode === "stripe" && payoutsEnabled;
 
+  useEffect(() => {
+    function handlePageShow() {
+      setPending(false);
+    }
+    window.addEventListener("pageshow", handlePageShow);
+    return () => window.removeEventListener("pageshow", handlePageShow);
+  }, []);
+
+  useEffect(() => {
+    if (!pending) {
+      return;
+    }
+    const timer = window.setTimeout(() => {
+      setPending(false);
+      setError("Checkout did not open. Try Pay again.");
+    }, 30_000);
+    return () => window.clearTimeout(timer);
+  }, [pending]);
+
   function continueToPay() {
     if (!amountCents) {
       setError("Choose $5, $10, $20, or a custom amount of at least $1.");
       return;
     }
     setError(null);
-    if (payMode === "stripe") {
-      void submitStripePay(amountCents);
-      return;
-    }
     setStep("pay");
   }
 
-  async function submitStripePay(cents: number) {
-    setPending(true);
-    setError(null);
-    const result = await startCheckoutAction(code, cents);
-    setPending(false);
-    if (result?.ok === false) {
-      setError(result.error);
+  function onStripePaySubmit(event: FormEvent<HTMLFormElement>) {
+    if (!amountCents) {
+      event.preventDefault();
+      setPending(false);
+      setError("Choose $5, $10, $20, or a custom amount of at least $1.");
+      return;
     }
+    setError(null);
+    setPending(true);
   }
 
   async function submitDemoPay() {
@@ -72,14 +91,19 @@ export function TipCheckout({
     }
     setPending(true);
     setError(null);
-    const result = await recordDemoTipAction(code, amountCents);
-    setPending(false);
-    if (!result.ok) {
-      setError(result.error);
-      return;
+    try {
+      const result = await recordDemoTipAction(code, amountCents);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      setPaidCents(result.amountCents);
+      setStep("done");
+    } catch {
+      setError("Demo checkout did not finish. Try again.");
+    } finally {
+      setPending(false);
     }
-    setPaidCents(result.amountCents);
-    setStep("done");
   }
 
   if (step === "done" && paidCents !== null) {
@@ -230,8 +254,8 @@ export function TipCheckout({
     );
   }
 
-  return (
-    <div className="mt-8">
+  const amountFields = (
+    <>
       <div className="grid grid-cols-3 gap-2">
         {PRESETS.map((cents) => (
           <button
@@ -285,24 +309,51 @@ export function TipCheckout({
           {error}
         </p>
       ) : null}
+    </>
+  );
+
+  if (stripeLive) {
+    return (
+      <form
+        method="POST"
+        action={TIP_CHECKOUT_PATH}
+        onSubmit={onStripePaySubmit}
+        className="mt-8"
+      >
+        <input type="hidden" name="code" value={code} />
+        <input type="hidden" name="amountCents" value={amountCents ?? ""} />
+        {amountFields}
+        <button
+          type="submit"
+          disabled={pending}
+          className="mt-6 w-full rounded-full bg-teal py-3.5 text-sm font-semibold text-white hover:bg-teal-deep disabled:opacity-60"
+        >
+          {pending
+            ? "Opening Checkout…"
+            : amountCents
+              ? `Pay ${formatUsd(amountCents)}`
+              : "Pay"}
+        </button>
+        <p className="mt-4 text-center text-xs leading-5 text-muted">
+          Apple Pay, Google Pay, or card via Stripe Checkout. No guest account.
+        </p>
+      </form>
+    );
+  }
+
+  return (
+    <div className="mt-8">
+      {amountFields}
       <button
         type="button"
         onClick={continueToPay}
         disabled={pending}
         className="mt-6 w-full rounded-full bg-teal py-3.5 text-sm font-semibold text-white hover:bg-teal-deep disabled:opacity-60"
       >
-        {pending
-          ? "Opening Checkout…"
-          : stripeLive && amountCents
-            ? `Pay ${formatUsd(amountCents)}`
-            : stripeLive
-              ? "Pay"
-              : "Continue to pay"}
+        Continue to pay
       </button>
       <p className="mt-4 text-center text-xs leading-5 text-muted">
-        {stripeLive
-          ? "Apple Pay, Google Pay, or card via Stripe Checkout. No guest account."
-          : `No guest account. globotips.com/tip/${code}`}
+        {`No guest account. globotips.com/tip/${code}`}
       </p>
     </div>
   );
