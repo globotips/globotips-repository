@@ -1,6 +1,10 @@
 import Stripe from "stripe";
 import type { Employee } from "@prisma/client";
 import { stripeRedirectOrigin } from "@/lib/stripe-origin";
+import {
+  expressAccountConfiguration,
+  expressOnboardingConfigurations,
+} from "@/lib/stripe-connect-account";
 import { prisma } from "@/lib/db";
 import { platformFeeCents } from "@/lib/platform-fee";
 import { getStripeMode, isStripeEnabled } from "@/lib/stripe-mode";
@@ -63,15 +67,7 @@ export async function createExpressAccount(employee: Employee): Promise<string> 
         surname: lastName,
       },
     },
-    configuration: {
-      recipient: {
-        capabilities: {
-          stripe_balance: {
-            stripe_transfers: { requested: true },
-          },
-        },
-      },
-    },
+    configuration: expressAccountConfiguration(),
     defaults: {
       currency: "usd",
       responsibilities: {
@@ -105,7 +101,7 @@ export async function createAccountOnboardingLink(
     use_case: {
       type: "account_onboarding",
       account_onboarding: {
-        configurations: ["recipient"],
+        configurations: [...expressOnboardingConfigurations],
         refresh_url: `${publicOrigin}/admin/connect/refresh?employee=${encodeURIComponent(employeeId)}`,
         return_url: `${publicOrigin}/admin/connect/return?employee=${encodeURIComponent(employeeId)}`,
       },
@@ -131,7 +127,12 @@ export async function retrieveConnectAccount(
 ): Promise<Stripe.V2.Core.Account> {
   const stripe = getStripe();
   return stripe.v2.core.accounts.retrieve(stripeAccountId, {
-    include: ["configuration.recipient", "requirements", "identity"],
+    include: [
+      "configuration.merchant",
+      "configuration.recipient",
+      "requirements",
+      "identity",
+    ],
   });
 }
 
