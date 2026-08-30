@@ -65,7 +65,7 @@ stripe listen --forward-to localhost:3000/api/webhooks/stripe
 
 6. Put the CLI signing secret (`whsec_...`) in `.env` as `STRIPE_WEBHOOK_SECRET`, then restart `npm run dev`.
 7. Sign in as the Tampa hotel. For an existing employee, click **Start Stripe**. Adding a new employee starts Connect onboarding immediately.
-8. Complete Express-style onboarding with Stripe test data (Accounts v2 recipient + Express dashboard — the current Connect equivalent of Express). The QR is **live** only after recipient `stripe_transfers` and `payouts` are active.
+8. Complete Express-style onboarding with Stripe test data (Accounts v2 merchant `card_payments` + recipient `stripe_transfers` + Express dashboard — the current Connect equivalent of Express). Live Stripe requires both capabilities on create. The QR is **live** only after recipient `stripe_transfers` and `payouts` are active.
 9. Open `/tip/{code}` and pay with a [test card](https://docs.stripe.com/testing#cards) (`4242 4242 4242 4242`). Apple Pay / Google Pay appear on Checkout when the browser and domain support them.
 
 The webhook `checkout.session.completed` records the paid tip. Returning from Checkout with `session_id` also records it (idempotent on the Checkout session id). `account.updated` refreshes whether that worker can receive payouts. If you create a Dashboard endpoint instead of the CLI, listen to those events on the platform and on connected accounts.
