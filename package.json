@@ -7,7 +7,7 @@
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "tsx --test src/lib/platform-fee.test.ts src/lib/stripe-mode.test.ts src/lib/app-origin.test.ts src/lib/stripe-connect-account.test.ts",
+    "test": "tsx --test src/lib/platform-fee.test.ts src/lib/stripe-mode.test.ts src/lib/app-origin.test.ts src/lib/stripe-connect-account.test.ts src/lib/tip-checkout.test.ts",
     "db:setup": "prisma generate && prisma db push && prisma db seed",
     "db:seed": "prisma db seed"
   },
