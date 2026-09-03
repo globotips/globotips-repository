@@ -108,10 +108,12 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .thank-you-card {
-    animation: none;
+    animation: none !important;
   }
 
-  .thank-you-petals {
-    display: none;
+  .thank-you-petals,
+  .thank-you-petal {
+    display: none !important;
+    animation: none !important;
   }
 }

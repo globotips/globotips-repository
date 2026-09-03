@@ -1,4 +1,6 @@
-import type { CSSProperties } from "react";
+"use client";
+
+import { useEffect, useState, type CSSProperties } from "react";
 import { formatUsd } from "@/lib/money";
 import { tipThankYouCopy, type TipThankYouPayMode } from "@/lib/tip-thank-you";
 
@@ -23,7 +25,26 @@ const PETALS = [
   { left: "89%", delay: "-18s", duration: "21s", size: 13, color: "#6d8f86", sway: "14px" },
 ] as const;
 
+function useAllowsCelebrationMotion() {
+  const [allowsMotion, setAllowsMotion] = useState(false);
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const sync = () => setAllowsMotion(!media.matches);
+    sync();
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
+
+  return allowsMotion;
+}
+
 function FallingPetals() {
+  const allowsMotion = useAllowsCelebrationMotion();
+  if (!allowsMotion) {
+    return null;
+  }
+
   return (
     <div className="thank-you-petals" aria-hidden="true">
       {PETALS.map((petal, index) => (
