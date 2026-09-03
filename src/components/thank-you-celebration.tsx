@@ -3,24 +3,24 @@ import { formatUsd } from "@/lib/money";
 import { tipThankYouCopy, type TipThankYouPayMode } from "@/lib/tip-thank-you";
 
 const PETALS = [
-  { left: "4%", delay: "0s", duration: "18s", size: 12, color: "#c9a8a4", sway: "22px" },
-  { left: "11%", delay: "2.4s", duration: "16s", size: 9, color: "#b8c4d4", sway: "-18px" },
-  { left: "18%", delay: "5.1s", duration: "20s", size: 14, color: "#d4c4a8", sway: "16px" },
-  { left: "26%", delay: "1.2s", duration: "15s", size: 8, color: "#9bb5ae", sway: "-24px" },
-  { left: "33%", delay: "7.8s", duration: "19s", size: 11, color: "#e2c9b0", sway: "20px" },
-  { left: "41%", delay: "3.6s", duration: "17s", size: 13, color: "#c4a15a", sway: "-14px" },
-  { left: "48%", delay: "0.8s", duration: "21s", size: 10, color: "#7d9aa3", sway: "26px" },
-  { left: "56%", delay: "6.2s", duration: "16s", size: 12, color: "#c9a8a4", sway: "-20px" },
-  { left: "63%", delay: "4.4s", duration: "18s", size: 9, color: "#d4c4a8", sway: "15px" },
-  { left: "71%", delay: "1.9s", duration: "14s", size: 15, color: "#b8c4d4", sway: "-22px" },
-  { left: "78%", delay: "8.5s", duration: "20s", size: 8, color: "#9bb5ae", sway: "18px" },
-  { left: "86%", delay: "2.8s", duration: "17s", size: 11, color: "#e2c9b0", sway: "-16px" },
-  { left: "93%", delay: "5.7s", duration: "19s", size: 10, color: "#c4a15a", sway: "12px" },
-  { left: "8%", delay: "10.2s", duration: "15s", size: 7, color: "#7d9aa3", sway: "10px" },
-  { left: "52%", delay: "9.1s", duration: "22s", size: 13, color: "#c9a8a4", sway: "-12px" },
-  { left: "67%", delay: "11.4s", duration: "16s", size: 8, color: "#b8c4d4", sway: "19px" },
-  { left: "22%", delay: "12s", duration: "18s", size: 10, color: "#d4c4a8", sway: "-15px" },
-  { left: "89%", delay: "13.3s", duration: "21s", size: 9, color: "#9bb5ae", sway: "14px" },
+  { left: "4%", delay: "-4s", duration: "18s", size: 16, color: "#c48b86", sway: "22px" },
+  { left: "11%", delay: "-9s", duration: "16s", size: 12, color: "#7a8eaa", sway: "-18px" },
+  { left: "18%", delay: "-2s", duration: "20s", size: 18, color: "#c4a15a", sway: "16px" },
+  { left: "26%", delay: "-11s", duration: "15s", size: 13, color: "#6d8f86", sway: "-24px" },
+  { left: "33%", delay: "-6s", duration: "19s", size: 15, color: "#d4a09a", sway: "20px" },
+  { left: "41%", delay: "-13s", duration: "17s", size: 17, color: "#5e7a75", sway: "-14px" },
+  { left: "48%", delay: "-1s", duration: "21s", size: 14, color: "#7a8eaa", sway: "26px" },
+  { left: "56%", delay: "-8s", duration: "16s", size: 16, color: "#c48b86", sway: "-20px" },
+  { left: "63%", delay: "-3s", duration: "18s", size: 12, color: "#c4a15a", sway: "15px" },
+  { left: "71%", delay: "-12s", duration: "14s", size: 19, color: "#7a8eaa", sway: "-22px" },
+  { left: "78%", delay: "-5s", duration: "20s", size: 13, color: "#6d8f86", sway: "18px" },
+  { left: "86%", delay: "-10s", duration: "17s", size: 15, color: "#d4a09a", sway: "-16px" },
+  { left: "93%", delay: "-7s", duration: "19s", size: 14, color: "#c4a15a", sway: "12px" },
+  { left: "8%", delay: "-14s", duration: "15s", size: 11, color: "#5e7a75", sway: "10px" },
+  { left: "52%", delay: "-16s", duration: "22s", size: 17, color: "#c48b86", sway: "-12px" },
+  { left: "67%", delay: "-15s", duration: "16s", size: 12, color: "#7a8eaa", sway: "19px" },
+  { left: "22%", delay: "-17s", duration: "18s", size: 14, color: "#c4a15a", sway: "-15px" },
+  { left: "89%", delay: "-18s", duration: "21s", size: 13, color: "#6d8f86", sway: "14px" },
 ] as const;
 
 function FallingPetals() {
@@ -137,7 +137,7 @@ export function ThankYouCelebration({
           <p className="mx-auto mt-5 max-w-sm text-sm leading-6 text-muted">
             {copy.detail}
           </p>
-          <p className="mt-6 font-display text-sm italic text-teal">
+          <p className="mt-6 font-display text-sm italic text-muted">
             {copy.signoff}
           </p>
           <button
