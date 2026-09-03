@@ -45,3 +45,72 @@ body {
 ::selection {
   background: #c4a15a55;
 }
+
+.thank-you-card {
+  animation: thank-you-card-in 700ms ease-out both;
+}
+
+.thank-you-petals {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  overflow: hidden;
+}
+
+.thank-you-petal {
+  position: absolute;
+  top: -10%;
+  left: var(--left);
+  width: var(--size);
+  height: calc(var(--size) * 1.35);
+  background: var(--color);
+  border-radius: 72% 12% 68% 18%;
+  opacity: 0.7;
+  animation: thank-you-petal-fall var(--duration) linear var(--delay) infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes thank-you-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes thank-you-petal-fall {
+  0% {
+    transform: translate3d(0, -8vh, 0) rotate(0deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.72;
+  }
+  25% {
+    transform: translate3d(var(--sway), 22vh, 0) rotate(70deg);
+  }
+  50% {
+    transform: translate3d(calc(var(--sway) * -0.7), 52vh, 0) rotate(175deg);
+  }
+  75% {
+    transform: translate3d(var(--sway), 80vh, 0) rotate(255deg);
+  }
+  100% {
+    transform: translate3d(calc(var(--sway) * 0.35), 112vh, 0) rotate(340deg);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thank-you-card {
+    animation: none;
+  }
+
+  .thank-you-petals {
+    display: none;
+  }
+}

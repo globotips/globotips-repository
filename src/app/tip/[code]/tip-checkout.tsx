@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { recordDemoTipAction } from "@/app/tip/[code]/actions";
+import { ThankYouCelebration } from "@/components/thank-you-celebration";
 import { formatUsd, parseUsdToCents } from "@/lib/money";
 import { TIP_CHECKOUT_PATH } from "@/lib/tip-checkout";
 
@@ -108,32 +109,16 @@ export function TipCheckout({
 
   if (step === "done" && paidCents !== null) {
     return (
-      <div className="mt-8 rounded-3xl border border-line bg-card p-6 text-center">
-        <p className="text-sm font-semibold uppercase tracking-[0.16em] text-teal">
-          {payMode === "stripe" ? "Tip sent" : "Demo complete"}
-        </p>
-        <h2 className="mt-2 font-display text-2xl">
-          Thank you for tipping {name}
-        </h2>
-        <p className="mt-3 text-lg">{formatUsd(paidCents)}</p>
-        <p className="mt-4 text-sm leading-6 text-muted">
-          {payMode === "stripe"
-            ? stripeKind === "live"
-              ? "Paid through Stripe Checkout. The guest was not surcharged. GloboTips keeps 3% from the tip. The hotel never holds money."
-              : "Paid through Stripe Checkout in test mode. The guest was not surcharged. GloboTips keeps 3% from the tip."
-            : "This was demo mode. No card was charged and no real money moved."}
-        </p>
-        <button
-          type="button"
-          onClick={() => {
-            setStep("amount");
-            setPaidCents(null);
-          }}
-          className="mt-6 text-sm font-semibold text-teal"
-        >
-          {payMode === "stripe" ? "Send another tip" : "Send another demo tip"}
-        </button>
-      </div>
+      <ThankYouCelebration
+        name={name}
+        amountCents={paidCents}
+        payMode={payMode}
+        stripeKind={stripeKind}
+        onSendAnother={() => {
+          setStep("amount");
+          setPaidCents(null);
+        }}
+      />
     );
   }
 
