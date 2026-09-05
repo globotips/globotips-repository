@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { recordDemoTipAction } from "@/app/tip/[code]/actions";
 import { ThankYouCelebration } from "@/components/thank-you-celebration";
+import { displayTipLink } from "@/lib/config";
 import { formatUsd, parseUsdToCents } from "@/lib/money";
 import { TIP_CHECKOUT_PATH } from "@/lib/tip-checkout";
 
@@ -338,7 +339,7 @@ export function TipCheckout({
         Continue to pay
       </button>
       <p className="mt-4 text-center text-xs leading-5 text-muted">
-        {`No guest account. globotips.com/tip/${code}`}
+        {`No guest account. ${displayTipLink(code)}`}
       </p>
     </div>
   );

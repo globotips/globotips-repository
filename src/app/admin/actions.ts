@@ -3,16 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { resolveStripeRedirectOrigin } from "@/lib/app-origin";
 import { getSessionHotel, sessionCookieOptions, verifyHotelLogin } from "@/lib/auth";
 import { SESSION_COOKIE } from "@/lib/config";
 import { prisma } from "@/lib/db";
+import { parseUsMobile } from "@/lib/phone";
 import { createSessionToken } from "@/lib/session";
-import {
-  createAccountOnboardingLink,
-  createExpressAccount,
-} from "@/lib/stripe";
-import { getStripeMode, isStripeEnabled } from "@/lib/stripe-mode";
+import { markInvitedAndNotify } from "@/lib/staff-invite";
 import { createUniqueTipCode } from "@/lib/tip-code";
 
 export async function loginAction(formData: FormData) {
@@ -33,35 +29,6 @@ export async function logoutAction() {
   redirect("/login");
 }
 
-async function startOnboardingRedirect(employeeId: string, hotelId: string) {
-  const employee = await prisma.employee.findFirst({
-    where: { id: employeeId, hotelId },
-  });
-  if (!employee) {
-    redirect("/admin?connect=error");
-  }
-
-  let onboardingUrl: string;
-  try {
-    let stripeAccountId = employee.stripeAccountId;
-    if (!stripeAccountId) {
-      stripeAccountId = await createExpressAccount(employee);
-      await prisma.employee.update({
-        where: { id: employee.id },
-        data: { stripeAccountId },
-      });
-    }
-    onboardingUrl = await createAccountOnboardingLink(
-      stripeAccountId,
-      await resolveStripeRedirectOrigin(),
-      employee.id,
-    );
-  } catch {
-    redirect("/admin?connect=error");
-  }
-  redirect(onboardingUrl);
-}
-
 export async function addEmployeeAction(formData: FormData) {
   const hotel = await getSessionHotel();
   if (!hotel) {
@@ -71,34 +38,74 @@ export async function addEmployeeAction(formData: FormData) {
   if (!name) {
     redirect("/admin?staffError=name");
   }
+  const phone = parseUsMobile(String(formData.get("phone") ?? ""));
+  if (!phone) {
+    redirect("/admin?staffError=phone");
+  }
   const tipCode = await createUniqueTipCode(name);
   const employee = await prisma.employee.create({
     data: {
       hotelId: hotel.id,
       name,
+      phone,
       tipCode,
+      inviteStatus: "invited",
     },
   });
-  revalidatePath("/admin");
 
-  if (isStripeEnabled(getStripeMode())) {
-    await startOnboardingRedirect(employee.id, hotel.id);
-  }
+  const { sms } = await markInvitedAndNotify(employee);
+  revalidatePath("/admin");
+  redirect(`/admin?invited=${encodeURIComponent(employee.id)}&sms=${sms}`);
 }
 
-export async function startEmployeeOnboardingAction(formData: FormData) {
+export async function updateEmployeeAction(formData: FormData) {
   const hotel = await getSessionHotel();
   if (!hotel) {
     redirect("/login");
   }
-  if (!isStripeEnabled(getStripeMode())) {
-    redirect("/admin?connect=error");
+  const id = String(formData.get("id") ?? "");
+  const name = String(formData.get("name") ?? "").trim();
+  if (!id || !name) {
+    redirect("/admin?staffError=name");
+  }
+  const phone = parseUsMobile(String(formData.get("phone") ?? ""));
+  if (!phone) {
+    redirect("/admin?staffError=phone");
+  }
+  const employee = await prisma.employee.findFirst({
+    where: { id, hotelId: hotel.id },
+  });
+  if (!employee) {
+    redirect("/admin");
+  }
+  await prisma.employee.update({
+    where: { id: employee.id },
+    data: { name, phone },
+  });
+  revalidatePath("/admin");
+}
+
+export async function resendInviteAction(formData: FormData) {
+  const hotel = await getSessionHotel();
+  if (!hotel) {
+    redirect("/login");
   }
   const id = String(formData.get("id") ?? "");
   if (!id) {
     redirect("/admin");
   }
-  await startOnboardingRedirect(id, hotel.id);
+  const employee = await prisma.employee.findFirst({
+    where: { id, hotelId: hotel.id },
+  });
+  if (!employee) {
+    redirect("/admin");
+  }
+  if (!employee.phone) {
+    redirect(`/admin?staffError=phone&edit=${encodeURIComponent(employee.id)}`);
+  }
+  const { sms } = await markInvitedAndNotify(employee);
+  revalidatePath("/admin");
+  redirect(`/admin?invited=${encodeURIComponent(employee.id)}&sms=${sms}`);
 }
 
 export async function removeEmployeeAction(formData: FormData) {

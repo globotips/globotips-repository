@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { LegalFooter } from "@/components/legal-footer";
 import { Logo } from "@/components/logo";
 import { loginAction } from "@/app/admin/actions";
 
@@ -66,6 +67,7 @@ export default async function LoginPage({
             Sign in
           </button>
         </form>
+        <LegalFooter className="mt-10" />
       </main>
     </div>
   );

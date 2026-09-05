@@ -1,12 +1,13 @@
+import { randomBytes } from "crypto";
 import { PrismaClient } from "@prisma/client";
 import { hash } from "bcryptjs";
 
 const prisma = new PrismaClient();
 
 const DEMO_EMPLOYEES = [
-  { name: "Maria Santos", tipCode: "maria-santos" },
-  { name: "James Okonkwo", tipCode: "james-okonkwo" },
-  { name: "Elena Rossi", tipCode: "elena-rossi" },
+  { name: "Maria Santos", tipCode: "maria-santos", phone: "+18135550101" },
+  { name: "James Okonkwo", tipCode: "james-okonkwo", phone: "+18135550102" },
+  { name: "Elena Rossi", tipCode: "elena-rossi", phone: "+18135550103" },
 ] as const;
 
 function daysAgo(days: number, hour = 15): Date {
@@ -14,6 +15,10 @@ function daysAgo(days: number, hour = 15): Date {
   date.setDate(date.getDate() - days);
   date.setHours(hour, 10, 0, 0);
   return date;
+}
+
+function inviteToken(): string {
+  return randomBytes(24).toString("base64url");
 }
 
 async function main() {
@@ -38,13 +43,27 @@ async function main() {
 
   const employees = [];
   for (const staff of DEMO_EMPLOYEES) {
+    const existing = await prisma.employee.findUnique({
+      where: { tipCode: staff.tipCode },
+    });
     const employee = await prisma.employee.upsert({
       where: { tipCode: staff.tipCode },
-      update: { name: staff.name, hotelId: hotel.id },
+      update: {
+        name: staff.name,
+        hotelId: hotel.id,
+        phone: staff.phone,
+        inviteToken: existing?.inviteToken ?? inviteToken(),
+        inviteStatus: existing?.payoutsEnabled
+          ? "active"
+          : existing?.inviteStatus ?? "invited",
+      },
       create: {
         hotelId: hotel.id,
         name: staff.name,
+        phone: staff.phone,
         tipCode: staff.tipCode,
+        inviteToken: inviteToken(),
+        inviteStatus: "invited",
       },
     });
     employees.push(employee);

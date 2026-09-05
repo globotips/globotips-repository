@@ -1,3 +1,4 @@
+import { GUEST_BRAND_NAME } from "@/lib/brand";
 import type { StripeMode } from "@/lib/stripe-mode";
 
 export function DemoBanner({
@@ -27,8 +28,8 @@ export function DemoBanner({
     return (
       <div className="border-b border-teal/30 bg-teal/10 text-center text-teal-deep px-4 py-2.5 text-sm">
         <strong className="font-semibold">Stripe live mode.</strong> Real cards
-        are charged. GloboTips keeps 3% from the tip. The hotel never holds
-        money.
+        are charged. {GUEST_BRAND_NAME} keeps 3% from the tip. The hotel never
+        holds money.
       </div>
     );
   }

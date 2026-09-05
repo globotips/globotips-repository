@@ -1,35 +1,35 @@
 import { NextResponse } from "next/server";
 import QRCode from "qrcode";
 import { getSessionHotel } from "@/lib/auth";
-import { qrTipUrl } from "@/lib/config";
+import { qrJoinUrl } from "@/lib/config";
 import { prisma } from "@/lib/db";
-import { canDownloadTipQr, resolveInviteStatus } from "@/lib/invite";
+import { canShowJoinQr, resolveInviteStatus } from "@/lib/invite";
 
 export async function GET(
   request: Request,
-  context: { params: Promise<{ code: string }> },
+  context: { params: Promise<{ token: string }> },
 ) {
   const hotel = await getSessionHotel();
   if (!hotel) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 
-  const { code } = await context.params;
+  const { token } = await context.params;
   const employee = await prisma.employee.findFirst({
-    where: { tipCode: code, hotelId: hotel.id },
+    where: { inviteToken: token, hotelId: hotel.id },
   });
   if (!employee) {
     return new NextResponse("Not found", { status: 404 });
   }
 
   const status = resolveInviteStatus(employee);
-  if (!canDownloadTipQr(status)) {
-    return new NextResponse("Tip QR is available after the employee is Active.", {
+  if (!canShowJoinQr(status)) {
+    return new NextResponse("Join QR is for Invited or Pending staff.", {
       status: 403,
     });
   }
 
-  const png = await QRCode.toBuffer(qrTipUrl(employee.tipCode), {
+  const png = await QRCode.toBuffer(qrJoinUrl(token), {
     type: "png",
     width: 640,
     margin: 2,
@@ -44,7 +44,7 @@ export async function GET(
   return new NextResponse(new Uint8Array(png), {
     headers: {
       "Content-Type": "image/png",
-      "Content-Disposition": `${download ? "attachment" : "inline"}; filename="tip-${employee.tipCode}.png"`,
+      "Content-Disposition": `${download ? "attachment" : "inline"}; filename="join-${employee.tipCode}.png"`,
       "Cache-Control": "no-store",
     },
   });

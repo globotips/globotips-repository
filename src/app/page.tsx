@@ -1,5 +1,8 @@
 import Link from "next/link";
+import { LegalFooter } from "@/components/legal-footer";
 import { Logo } from "@/components/logo";
+import { GUEST_BRAND_NAME } from "@/lib/brand";
+import { displayTipLink } from "@/lib/config";
 
 export default function HomePage() {
   return (
@@ -106,7 +109,7 @@ export default function HomePage() {
           <div className="rounded-3xl border border-line bg-card px-7 py-8 md:px-10 md:py-12">
             <h2 className="font-display text-3xl text-ink">Founders</h2>
             <p className="mt-4 text-lg leading-8 text-muted">
-              GloboTips was founded by{" "}
+              {GUEST_BRAND_NAME} was founded by{" "}
               <span className="font-semibold text-ink">
                 Rosalie Dudkiewicz
               </span>
@@ -123,7 +126,7 @@ export default function HomePage() {
       <footer className="border-t border-line">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-2 px-5 py-8 text-sm text-muted sm:flex-row sm:items-center sm:justify-between">
           <Logo className="opacity-90" />
-          <p>globotips.com</p>
+          <LegalFooter className="sm:text-right" />
         </div>
       </footer>
     </div>
@@ -167,7 +170,7 @@ function HeroPhone() {
               Continue to pay
             </div>
             <p className="mt-4 text-[11px] text-muted">
-              globotips.com/tip/maria-santos
+              {displayTipLink("maria-santos")}
             </p>
           </div>
         </div>
