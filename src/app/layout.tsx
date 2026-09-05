@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Source_Sans_3 } from "next/font/google";
+import { GUEST_BRAND_DESCRIPTION, GUEST_BRAND_NAME } from "@/lib/brand";
+import { PUBLIC_TIP_HOST } from "@/lib/config";
 import "./globals.css";
 
 const sourceSans = Source_Sans_3({
@@ -13,13 +15,24 @@ const fraunces = Fraunces({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://www.globotips.com"),
+  metadataBase: new URL(`https://www.${PUBLIC_TIP_HOST}`),
   title: {
-    default: "GloboTips",
-    template: "%s · GloboTips",
+    default: GUEST_BRAND_NAME,
+    template: `%s · ${GUEST_BRAND_NAME}`,
   },
-  description:
-    "Cashless tipping for hotel staff and tour guides. Guests scan a QR with their phone camera. No guest app, no guest account, no login.",
+  description: GUEST_BRAND_DESCRIPTION,
+  applicationName: GUEST_BRAND_NAME,
+  openGraph: {
+    title: GUEST_BRAND_NAME,
+    description: GUEST_BRAND_DESCRIPTION,
+    siteName: GUEST_BRAND_NAME,
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: GUEST_BRAND_NAME,
+    description: GUEST_BRAND_DESCRIPTION,
+  },
   icons: {
     icon: "/favicon.svg",
   },

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { DemoBanner } from "@/components/demo-banner";
+import { LegalFooter } from "@/components/legal-footer";
 import { Logo } from "@/components/logo";
 import { PhotoPlaceholder } from "@/components/photo-placeholder";
 import { prisma } from "@/lib/db";
@@ -93,6 +94,7 @@ export default async function TipPage({
           canceled={query.canceled === "1"}
           payError={parseTipCheckoutPayError(query.pay_error)}
         />
+        <LegalFooter className="mt-10" />
       </main>
     </div>
   );

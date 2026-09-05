@@ -1,10 +1,14 @@
 import Stripe from "stripe";
 import type { Employee } from "@prisma/client";
+import { GUEST_BRAND_NAME } from "@/lib/brand";
+import { PUBLIC_TIP_HOST } from "@/lib/config";
 import { stripeRedirectOrigin } from "@/lib/stripe-origin";
 import {
   expressAccountConfiguration,
   expressOnboardingConfigurations,
 } from "@/lib/stripe-connect-account";
+import { connectInviteStatus } from "@/lib/invite";
+import { hotelAdminOnboardingUrls, staffJoinOnboardingUrls } from "@/lib/onboarding-urls";
 import { prisma } from "@/lib/db";
 import { platformFeeCents } from "@/lib/platform-fee";
 import { getStripeMode, isStripeEnabled } from "@/lib/stripe-mode";
@@ -76,8 +80,8 @@ export async function createExpressAccount(employee: Employee): Promise<string> 
       },
       profile: {
         product_description:
-          "Receives guest tips as hotel staff through GloboTips.",
-        business_url: `https://globotips.com/tip/${employee.tipCode}`,
+          `Receives guest tips as hotel staff through ${GUEST_BRAND_NAME}.`,
+        business_url: `https://${PUBLIC_TIP_HOST}/tip/${employee.tipCode}`,
       },
     },
     metadata: {
@@ -93,17 +97,21 @@ export async function createAccountOnboardingLink(
   stripeAccountId: string,
   origin: string,
   employeeId: string,
+  inviteToken?: string | null,
 ): Promise<string> {
   const stripe = getStripe();
   const publicOrigin = checkoutOrigin(origin);
+  const urls = inviteToken
+    ? staffJoinOnboardingUrls(publicOrigin, inviteToken)
+    : hotelAdminOnboardingUrls(publicOrigin, employeeId);
   const link = await stripe.v2.core.accountLinks.create({
     account: stripeAccountId,
     use_case: {
       type: "account_onboarding",
       account_onboarding: {
         configurations: [...expressOnboardingConfigurations],
-        refresh_url: `${publicOrigin}/admin/connect/refresh?employee=${encodeURIComponent(employeeId)}`,
-        return_url: `${publicOrigin}/admin/connect/return?employee=${encodeURIComponent(employeeId)}`,
+        refresh_url: urls.refreshUrl,
+        return_url: urls.returnUrl,
       },
     },
   });
@@ -144,11 +152,13 @@ export async function syncEmployeeConnectStatus(employee: Employee): Promise<Emp
   const openRequirements = account.requirements?.entries?.some(
     (entry) => entry.awaiting_action_from === "user",
   );
+  const payoutsEnabled = accountCanReceiveTips(account);
   return prisma.employee.update({
     where: { id: employee.id },
     data: {
       detailsSubmitted: !openRequirements,
-      payoutsEnabled: accountCanReceiveTips(account),
+      payoutsEnabled,
+      inviteStatus: connectInviteStatus(payoutsEnabled, employee.inviteStatus),
     },
   });
 }
@@ -187,7 +197,7 @@ export async function createTipCheckoutSession(input: {
           unit_amount: amountCents,
           product_data: {
             name: `Tip for ${employee.name}`,
-            description: "Guest tip via GloboTips. The guest is not surcharged.",
+            description: `Guest tip via ${GUEST_BRAND_NAME}. The guest is not surcharged.`,
           },
         },
       },

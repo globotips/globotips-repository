@@ -1,3 +1,5 @@
+import { GUEST_BRAND_NAME } from "@/lib/brand";
+
 export function Logo({
   className = "",
   markClassName = "h-8 w-8",
@@ -11,7 +13,7 @@ export function Logo({
     <span className={`inline-flex items-center gap-2 ${className}`}>
       <svg
         viewBox="0 0 32 32"
-        className={markClassName}
+        className={`${markClassName} shrink-0`}
         aria-hidden="true"
       >
         <rect width="32" height="32" rx="8" fill="#0d5c4d" />
@@ -40,8 +42,8 @@ export function Logo({
         />
       </svg>
       {wordmark ? (
-        <span className="font-display text-xl tracking-tight text-ink">
-          GloboTips
+        <span className="font-display text-base leading-tight tracking-tight text-ink sm:text-xl">
+          {GUEST_BRAND_NAME}
         </span>
       ) : null}
     </span>

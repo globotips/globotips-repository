@@ -20,15 +20,21 @@ model Hotel {
 }
 
 model Employee {
-  id               String   @id @default(cuid())
+  id               String    @id @default(cuid())
   hotelId          String
-  hotel            Hotel    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  hotel            Hotel     @relation(fields: [hotelId], references: [id], onDelete: Cascade)
   name             String
-  tipCode          String   @unique
-  stripeAccountId  String?  @unique
-  detailsSubmitted Boolean  @default(false)
-  payoutsEnabled   Boolean  @default(false)
-  createdAt        DateTime @default(now())
+  phone            String?
+  tipCode          String    @unique
+  stripeAccountId  String?   @unique
+  detailsSubmitted Boolean   @default(false)
+  payoutsEnabled   Boolean   @default(false)
+  inviteStatus     String    @default("invited")
+  inviteToken      String?   @unique
+  remindAt         DateTime?
+  declinedAt       DateTime?
+  lastInvitedAt    DateTime?
+  createdAt        DateTime  @default(now())
   tips             Tip[]
 }
 

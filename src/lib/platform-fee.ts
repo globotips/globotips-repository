@@ -1,4 +1,4 @@
-/** GloboTips keeps 3% of the tip. The guest is not surcharged. */
+/** Platform keeps 3% of the tip (GLOBOTIPS LLC). The guest is not surcharged. */
 export const PLATFORM_FEE_PERCENT = 3;
 export const MIN_TIP_CENTS = 100;
 

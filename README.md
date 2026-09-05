@@ -1,12 +1,14 @@
 # GloboTips
 
+Guest-facing brand: **Travel Gratuity Group**. Legal entity: **GLOBOTIPS LLC**.
+
 Cashless tipping for hotel staff and tour guides. Guests scan a QR with their phone camera. There is no guest app, guest account, or guest login.
 
 Founders: **Rosalie Dudkiewicz** and **Dariusz Dudkiewicz**.
 
-When `STRIPE_SECRET_KEY` is unset, checkout stays a local demo and nothing is charged. When test keys are set, guests pay through Stripe Checkout and the tip is a destination charge to that worker’s Express account. In production, live keys are allowed only when `STRIPE_MODE=live` **and** `NODE_ENV=production` are set on the host. GloboTips keeps 3% via `application_fee_amount`. The guest is not surcharged. The hotel never holds money.
+When `STRIPE_SECRET_KEY` is unset, checkout stays a local demo and nothing is charged. When test keys are set, guests pay through Stripe Checkout and the tip is a destination charge to that worker’s Express account. In production, live keys are allowed only when `STRIPE_MODE=live` **and** `NODE_ENV=production` are set on the host. The platform keeps 3% via `application_fee_amount`. The guest is not surcharged. The hotel never holds money.
 
-Public links are written as `globotips.com/tip/{code}`. In live mode, Stripe Account Link return/refresh URLs and Checkout success/cancel URLs always use `https://www.globotips.com` (never localhost).
+Displayed guest links use `travelgratuitygroup.com/tip/{code}` (and staff join links `travelgratuitygroup.com/join/{token}`). Downloaded QR PNGs encode `TIP_QR_ORIGIN`. In live mode, Stripe Account Link return/refresh URLs and Checkout success/cancel URLs still use `https://www.globotips.com` (never localhost) — same Stripe account, same deployed host.
 
 ## Run locally
 
@@ -45,7 +47,7 @@ Change `DEMO_HOTEL_EMAIL` / `DEMO_HOTEL_PASSWORD` in `.env` and run `npm run db:
 - [http://localhost:3000/tip/james-okonkwo](http://localhost:3000/tip/james-okonkwo)
 - [http://localhost:3000/tip/elena-rossi](http://localhost:3000/tip/elena-rossi)
 
-Displayed staff links use `globotips.com/tip/{code}`. Downloaded QR PNGs encode `TIP_QR_ORIGIN` + `/tip/{code}` (defaults to `https://globotips.com`). Set `TIP_QR_ORIGIN=http://localhost:3000` in `.env` if you want a printed local QR to open this machine.
+Displayed staff tip links use `travelgratuitygroup.com/tip/{code}`. Downloaded QR PNGs encode `TIP_QR_ORIGIN` + `/tip/{code}` or `/join/{token}` (defaults to `https://www.travelgratuitygroup.com`). Set `TIP_QR_ORIGIN=http://localhost:3000` in `.env` if you want a printed local QR to open this machine.
 
 ## Stripe test mode
 
@@ -64,8 +66,8 @@ stripe listen --forward-to localhost:3000/api/webhooks/stripe
 ```
 
 6. Put the CLI signing secret (`whsec_...`) in `.env` as `STRIPE_WEBHOOK_SECRET`, then restart `npm run dev`.
-7. Sign in as the Tampa hotel. For an existing employee, click **Start Stripe**. Adding a new employee starts Connect onboarding immediately.
-8. Complete Express-style onboarding with Stripe test data (Accounts v2 merchant `card_payments` + recipient `stripe_transfers` + Express dashboard — the current Connect equivalent of Express). Live Stripe requires both capabilities on create. The QR is **live** only after recipient `stripe_transfers` and `payouts` are active.
+7. Sign in as the Tampa hotel. Adding an employee requires a **US mobile**. That creates a staff join invite. If `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and `TWILIO_FROM_NUMBER` are set, an SMS is sent with the join link. Otherwise the add still succeeds and admin shows the join link plus a printable join QR.
+8. On a phone, open `/join/{token}`: **Join now** (Stripe Account Link), **Not now / remind in 7 days**, or **Decline for this property**. Hotel statuses: Invited / Pending / Active / Declined. Resend invite from admin. Complete Express-style onboarding with Stripe test data (Accounts v2 merchant `card_payments` + recipient `stripe_transfers` + Express dashboard — the current Connect equivalent of Express). Live Stripe requires both capabilities on create. The **tip** QR is live only after recipient `stripe_transfers` and `payouts` are active (Active status). Admin can download the tip QR for Active staff and the join QR for Invited staff.
 9. Open `/tip/{code}` and pay with a [test card](https://docs.stripe.com/testing#cards) (`4242 4242 4242 4242`). Pay is a native form POST to `/api/tip/checkout`, which creates the session and returns HTTP 303 to Stripe Checkout. Apple Pay / Google Pay appear on Checkout when the browser and domain support them.
 
 The webhook `checkout.session.completed` records the paid tip. Returning from Checkout with `session_id` also records it (idempotent on the Checkout session id). `account.updated` refreshes whether that worker can receive payouts. If you create a Dashboard endpoint instead of the CLI, listen to those events on the platform and on connected accounts.
@@ -82,7 +84,8 @@ Set these **on the host** (never in git, never as committed files):
 | `STRIPE_MODE` | `live` |
 | `SESSION_SECRET` | long random string |
 | `DATABASE_URL` | Neon / Vercel Postgres `postgresql://...` URL (see below). Never commit credentials. |
-| `TIP_QR_ORIGIN` | `https://www.globotips.com` |
+| `TIP_QR_ORIGIN` | `https://www.travelgratuitygroup.com` (or the origin that actually serves guest pages) |
+| `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` / `TWILIO_FROM_NUMBER` | optional; SMS staff invites when all three are set |
 | `STRIPE_SECRET_KEY` | `sk_live_...` (host env only) |
 | `STRIPE_PUBLISHABLE_KEY` | `pk_live_...` (host env only) |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | `pk_live_...` (host env only) |
@@ -125,7 +128,8 @@ Destination charges stay the same: `application_fee_amount` is 3% of the tip. Th
 ## What is in this app
 
 - Landing page at `/` (founders Rosalie Dudkiewicz and Dariusz Dudkiewicz; hotel pays nothing to try; ~3% from the tip)
-- Hotel admin at `/login` and `/admin`: add/remove employees, download QR PNGs, see **aggregate** totals by day and by employee
+- Hotel admin at `/login` and `/admin`: add/edit employees (US mobile), staff invite statuses, resend invite, download tip QR (Active) or join QR (Invited), see **aggregate** totals by day and by employee
+- Staff join page at `/join/{token}` (phone): Join now · remind in 7 days · decline
 - Guest tip page at `/tip/{code}`: name, photo placeholder, $5 / $10 / $20 / custom
 - Demo checkout when Stripe keys are missing
 - Stripe Checkout destination charges in test mode when test keys are present
