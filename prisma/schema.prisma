@@ -43,3 +43,22 @@ model Tip {
   stripePaymentIntentId   String?
   createdAt               DateTime @default(now())
 }
+
+/// Brazil recruiting waitlist. No payments and no hotel/Stripe onboarding.
+model InterestLead {
+  id           String   @id @default(cuid())
+  fullName     String
+  email        String
+  phone        String
+  country      String
+  city         String
+  role         String
+  businessName String
+  notes        String?
+  locale       String   @default("pt")
+  source       String?
+  createdAt    DateTime @default(now())
+
+  @@index([email])
+  @@index([createdAt])
+}

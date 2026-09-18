@@ -4,6 +4,12 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["@prisma/client", "bcryptjs", "stripe"],
   agentRules: false,
   poweredByHeader: false,
+  async redirects() {
+    return [
+      { source: "/pt/interesse", destination: "/interesse", permanent: false },
+      { source: "/pt/interest", destination: "/interesse", permanent: false },
+    ];
+  },
   async headers() {
     return [
       {

@@ -24,7 +24,8 @@ export async function loginAction(formData: FormData) {
   }
   const store = await cookies();
   store.set(SESSION_COOKIE, await createSessionToken(hotel.id), sessionCookieOptions());
-  redirect("/admin");
+  const next = String(formData.get("next") ?? "");
+  redirect(next.startsWith("/admin") ? next : "/admin");
 }
 
 export async function logoutAction() {

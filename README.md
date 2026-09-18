@@ -8,6 +8,8 @@ When `STRIPE_SECRET_KEY` is unset, checkout stays a local demo and nothing is ch
 
 Public links are written as `globotips.com/tip/{code}`. In live mode, Stripe Account Link return/refresh URLs and Checkout success/cancel URLs always use `https://www.globotips.com` (never localhost).
 
+The guest-facing marketing brand is **Travel Gratuity Group**. The legal entity remains **GLOBOTIPS LLC**. Rosalie’s business-card QR opens `https://www.travelgratuitygroup.com` (apex should serve the same app). The homepage language control and **Cadastro de interesse** waitlist are for Brazil recruiting — they do not start Stripe or ask anyone to operate yet.
+
 ## Run locally
 
 You need Node.js 20+ and a PostgreSQL `DATABASE_URL`. SQLite (`file:./dev.db`) is not supported.
@@ -122,10 +124,67 @@ Point the live Stripe webhook at `https://www.globotips.com/api/webhooks/stripe`
 
 Destination charges stay the same: `application_fee_amount` is 3% of the tip. The guest is not surcharged. The hotel never holds money.
 
+## Brazil recruiting waitlist
+
+Public interest signup (no payments, no Connect onboarding):
+
+- `/interesse` — Portuguese-first form
+- `/en/interest` — English alias (`/interest` redirects here)
+- Homepage CTA uses the selected language (`Cadastro de interesse` in Portuguese)
+
+The header language dropdown supports Português (Brasil), English, Español, and Italiano. The choice is stored in the `globotips_locale` cookie and `localStorage`. First visit reads `Accept-Language` and uses Portuguese when `pt-BR` / `pt` is present, otherwise English. `/?lang=pt` and `/pt` (also `/en`, `/es`, `/it`) set the language and return to the homepage.
+
+Leads are stored in the `InterestLead` table. Founders can review them at `/admin/leads` after the usual hotel admin login. Optional email: set `INTEREST_NOTIFY_EMAIL` and `RESEND_API_KEY` (and optionally `INTEREST_NOTIFY_FROM`). If those are unset, the form still saves.
+
+The interest form includes a short note that recipients will later be able to accumulate guest reviews over time (ranking / credibility). That is upcoming marketing copy only — reviews are **not** built or live. Tip fee stays 3%. There is no second Stripe account.
+
+### Production schema (required for `/interesse` to save)
+
+Vercel production must have the `InterestLead` table. After this revision is on `main` (or before the first live signup), apply the schema once against the **production** `DATABASE_URL`. Do not commit the URL or print it.
+
+From a machine that already has production `DATABASE_URL` in the environment (Vercel env pull, or the host):
+
+```bash
+npx prisma db push
+```
+
+If you use Prisma Migrate instead:
+
+```bash
+npx prisma migrate deploy
+```
+
+If `db push` fails with a prepared-statement or pgbouncer error, use Neon’s **direct** (non-`-pooler`) connection string for that command only. The app runtime can keep the pooled URL.
+
+If `/interesse` returns a save error after deploy, the table is missing — run the command above, then retry the form. Do not run `npm run db:seed` on production unless you want the Tampa demo hotel there.
+
+Equivalent SQL if you prefer to apply it by hand:
+
+```sql
+CREATE TABLE "InterestLead" (
+  "id" TEXT NOT NULL,
+  "fullName" TEXT NOT NULL,
+  "email" TEXT NOT NULL,
+  "phone" TEXT NOT NULL,
+  "country" TEXT NOT NULL,
+  "city" TEXT NOT NULL,
+  "role" TEXT NOT NULL,
+  "businessName" TEXT NOT NULL,
+  "notes" TEXT,
+  "locale" TEXT NOT NULL DEFAULT 'pt',
+  "source" TEXT,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT "InterestLead_pkey" PRIMARY KEY ("id")
+);
+CREATE INDEX "InterestLead_email_idx" ON "InterestLead"("email");
+CREATE INDEX "InterestLead_createdAt_idx" ON "InterestLead"("createdAt");
+```
+
 ## What is in this app
 
-- Landing page at `/` (founders Rosalie Dudkiewicz and Dariusz Dudkiewicz; hotel pays nothing to try; ~3% from the tip)
-- Hotel admin at `/login` and `/admin`: add/remove employees, download QR PNGs, see **aggregate** totals by day and by employee
+- Landing page at `/` (Travel Gratuity Group / GLOBOTIPS LLC; founders Rosalie Dudkiewicz and Dariusz Dudkiewicz; hotel pays nothing to try; ~3% from the tip)
+- Language dropdown on marketing pages and Brazil interest waitlist at `/interesse`
+- Hotel admin at `/login` and `/admin`: add/remove employees, download QR PNGs, see **aggregate** totals by day and by employee, review interest leads at `/admin/leads`
 - Guest tip page at `/tip/{code}`: name, photo placeholder, $5 / $10 / $20 / custom
 - Demo checkout when Stripe keys are missing
 - Stripe Checkout destination charges in test mode when test keys are present
@@ -134,7 +193,7 @@ Destination charges stay the same: `application_fee_amount` is 3% of the tip. Th
 
 ## What is not in this app
 
-Worker mobile app, multi-rail payouts (Pix / Wise / SEPA), delayed tipping, NFC, Wallet passes, a front-desk pool code, tax add-on, trademarks, or patents.
+Worker mobile app, guest-review product, ranking engine, multi-rail payouts (Pix / Wise / SEPA), delayed tipping, NFC, Wallet passes, a front-desk pool code, tax add-on, trademarks, or patents.
 
 ## Stack
 
