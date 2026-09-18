@@ -136,9 +136,13 @@ The header language dropdown supports Português (Brasil), English, Español, an
 
 Leads are stored in the `InterestLead` table. Founders can review them at `/admin/leads` after the usual hotel admin login. Optional email: set `INTEREST_NOTIFY_EMAIL` and `RESEND_API_KEY` (and optionally `INTEREST_NOTIFY_FROM`). If those are unset, the form still saves.
 
-### Schema change (Prisma)
+The interest form includes a short note that recipients will later be able to accumulate guest reviews over time (ranking / credibility). That is upcoming marketing copy only — reviews are **not** built or live. Tip fee stays 3%. There is no second Stripe account.
 
-This revision adds `InterestLead`. Apply it once against the target `DATABASE_URL` (preview/production). Do not commit the URL.
+### Production schema (required for `/interesse` to save)
+
+Vercel production must have the `InterestLead` table. After this revision is on `main` (or before the first live signup), apply the schema once against the **production** `DATABASE_URL`. Do not commit the URL or print it.
+
+From a machine that already has production `DATABASE_URL` in the environment (Vercel env pull, or the host):
 
 ```bash
 npx prisma db push
@@ -147,12 +151,14 @@ npx prisma db push
 If you use Prisma Migrate instead:
 
 ```bash
-npx prisma migrate dev --name interest-leads
+npx prisma migrate deploy
 ```
 
-If `db push` fails with a prepared-statement or pgbouncer error, use Neon’s **direct** (non-`-pooler`) connection string for that command.
+If `db push` fails with a prepared-statement or pgbouncer error, use Neon’s **direct** (non-`-pooler`) connection string for that command only. The app runtime can keep the pooled URL.
 
-Equivalent SQL:
+If `/interesse` returns a save error after deploy, the table is missing — run the command above, then retry the form. Do not run `npm run db:seed` on production unless you want the Tampa demo hotel there.
+
+Equivalent SQL if you prefer to apply it by hand:
 
 ```sql
 CREATE TABLE "InterestLead" (
@@ -187,7 +193,7 @@ CREATE INDEX "InterestLead_createdAt_idx" ON "InterestLead"("createdAt");
 
 ## What is not in this app
 
-Worker mobile app, multi-rail payouts (Pix / Wise / SEPA), delayed tipping, NFC, Wallet passes, a front-desk pool code, tax add-on, trademarks, or patents.
+Worker mobile app, guest-review product, ranking engine, multi-rail payouts (Pix / Wise / SEPA), delayed tipping, NFC, Wallet passes, a front-desk pool code, tax add-on, trademarks, or patents.
 
 ## Stack
 

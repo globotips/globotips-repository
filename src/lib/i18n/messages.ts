@@ -33,6 +33,7 @@ export type Messages = {
     eyebrow: string;
     lead: string;
     waitlistNote: string;
+    reviewsHint: string;
     fullName: string;
     email: string;
     phone: string;
@@ -118,6 +119,8 @@ const pt: Messages = {
     lead: "Estamos recrutando hotéis, agências de viagem e guias no Brasil.",
     waitlistNote:
       "Isto é uma lista de interesse — não ativa pagamentos e não é um compromisso de operação. Guardamos seus dados e falamos com você quando o Brasil estiver pronto.",
+    reviewsHint:
+      "Além das gorjetas, quem recebe vai poder acumular avaliações de hóspedes ao longo do tempo — para melhorar o ranking e deixar o serviço mais credível. Em breve; ainda não está ativo.",
     fullName: "Nome completo",
     email: "E-mail",
     phone: "Telefone / WhatsApp",
@@ -212,6 +215,8 @@ const en: Messages = {
     lead: "We are recruiting hotels, travel agencies, and guides in Brazil.",
     waitlistNote:
       "This is an interest / waitlist signup — it does not activate payments and is not a commitment to operate. We store your details and contact you when Brazil is ready.",
+    reviewsHint:
+      "Besides tips, recipients will also be able to accumulate guest reviews over time — to improve ranking and make their service more credible. Coming soon; not live yet.",
     fullName: "Full name",
     email: "Email",
     phone: "Phone / WhatsApp",
@@ -306,6 +311,8 @@ const es: Messages = {
     lead: "Estamos reclutando hoteles, agencias de viaje y guías en Brasil.",
     waitlistNote:
       "Esto es una lista de interés — no activa pagos y no es un compromiso de operación. Guardamos sus datos y lo contactamos cuando Brasil esté listo.",
+    reviewsHint:
+      "Además de las propinas, quienes las reciben podrán acumular reseñas de huéspedes con el tiempo — para mejorar el ranking y hacer el servicio más creíble. Próximamente; todavía no está activo.",
     fullName: "Nombre completo",
     email: "Correo electrónico",
     phone: "Teléfono / WhatsApp",
@@ -400,6 +407,8 @@ const it: Messages = {
     lead: "Stiamo reclutando hotel, agenzie di viaggio e guide in Brasile.",
     waitlistNote:
       "Questa è una lista di interesse — non attiva pagamenti e non è un impegno a operare. Conserviamo i tuoi dati e ti contattiamo quando il Brasile sarà pronto.",
+    reviewsHint:
+      "Oltre alle mance, chi le riceve potrà accumulare recensioni degli ospiti nel tempo — per migliorare il ranking e rendere il servizio più credibile. In arrivo; non è ancora attivo.",
     fullName: "Nome e cognome",
     email: "Email",
     phone: "Telefono / WhatsApp",

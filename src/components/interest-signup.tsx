@@ -32,6 +32,7 @@ export async function InterestSignup({ source }: { source: string }) {
         <p className="mt-3 rounded-2xl border border-gold/40 bg-gold/15 px-4 py-3 text-sm leading-6 text-ink">
           {copy.waitlistNote}
         </p>
+        <p className="mt-3 text-sm leading-6 text-muted">{copy.reviewsHint}</p>
         <div className="mt-8">
           <InterestForm locale={locale} source={source} copy={copy} />
         </div>

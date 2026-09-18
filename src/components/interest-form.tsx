@@ -138,6 +138,7 @@ export function InterestForm({
         />
         <span className="mt-1.5 block text-sm text-muted">{copy.notesHint}</span>
       </label>
+      <p className="text-sm leading-6 text-muted">{copy.reviewsHint}</p>
       <button
         type="submit"
         disabled={pending}
