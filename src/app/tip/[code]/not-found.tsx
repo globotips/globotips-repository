@@ -13,7 +13,7 @@ export default function TipNotFound() {
         href="/"
         className="mt-8 rounded-full bg-teal px-5 py-2.5 text-sm font-semibold text-white"
       >
-        Back to GloboTips
+        Back to Travel Gratuity Group
       </Link>
     </div>
   );

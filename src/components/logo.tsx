@@ -1,8 +1,10 @@
+import Image from "next/image";
+
 export function Logo({
   className = "",
-  markClassName = "h-8 w-8",
+  markClassName = "h-9 w-auto",
   wordmark = true,
-  wordmarkText = "GloboTips",
+  wordmarkText = "Travel Gratuity Group",
 }: {
   className?: string;
   markClassName?: string;
@@ -10,39 +12,16 @@ export function Logo({
   wordmarkText?: string;
 }) {
   return (
-    <span className={`inline-flex items-center gap-2 ${className}`}>
-      <svg
-        viewBox="0 0 32 32"
-        className={markClassName}
-        aria-hidden="true"
-      >
-        <rect width="32" height="32" rx="8" fill="#0d5c4d" />
-        <circle
-          cx="16"
-          cy="16"
-          r="7.5"
-          fill="none"
-          stroke="#f4efe6"
-          strokeWidth="1.6"
-        />
-        <ellipse
-          cx="16"
-          cy="16"
-          rx="3.2"
-          ry="7.5"
-          fill="none"
-          stroke="#f4efe6"
-          strokeWidth="1.6"
-        />
-        <path
-          d="M8.8 16h14.4M10.2 12.2h11.6M10.2 19.8h11.6"
-          stroke="#c4a15a"
-          strokeWidth="1.2"
-          strokeLinecap="round"
-        />
-      </svg>
+    <span className={`inline-flex items-center gap-2.5 ${className}`}>
+      <Image
+        src="/brand/logo-mark.png"
+        alt={wordmark ? "" : wordmarkText}
+        width={663}
+        height={485}
+        className={`shrink-0 ${markClassName}`}
+      />
       {wordmark ? (
-        <span className="font-display text-lg tracking-tight text-ink sm:text-xl">
+        <span className="font-display text-lg leading-tight tracking-tight text-ink sm:text-xl">
           {wordmarkText}
         </span>
       ) : null}
