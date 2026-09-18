@@ -140,23 +140,21 @@ The interest form includes a short note that recipients will later be able to ac
 
 ### Production schema (required for `/interesse` to save)
 
-Vercel production must have the `InterestLead` table. After this revision is on `main` (or before the first live signup), apply the schema once against the **production** `DATABASE_URL`. Do not commit the URL or print it.
+Vercel production must have the `InterestLead` table. The first live submit after #13 failed with Prisma `P2021` (`public.InterestLead` does not exist). This Cloud Agent VM has no production `DATABASE_URL`, so the schema could not be pushed from here.
 
-From a machine that already has production `DATABASE_URL` in the environment (Vercel env pull, or the host):
+Vercel **production and preview builds** now run `prisma db push` automatically when `VERCEL=1` and `DATABASE_URL` are set (`scripts/push-schema-on-vercel.mjs`). Local `npm run build` and GitHub CI skip that step.
+
+If a build fails with a prepared-statement or pgbouncer error, set the Vercel build to Neon’s **direct** (non-`-pooler`) connection string. The app runtime can keep the pooled URL.
+
+You can still apply it by hand from a laptop that already has production `DATABASE_URL` (never commit or print the URL):
 
 ```bash
+npx vercel env pull .env.production.local --environment production --yes
+# inspect only the key names, not values
 npx prisma db push
 ```
 
-If you use Prisma Migrate instead:
-
-```bash
-npx prisma migrate deploy
-```
-
-If `db push` fails with a prepared-statement or pgbouncer error, use Neon’s **direct** (non-`-pooler`) connection string for that command only. The app runtime can keep the pooled URL.
-
-If `/interesse` returns a save error after deploy, the table is missing — run the command above, then retry the form. Do not run `npm run db:seed` on production unless you want the Tampa demo hotel there.
+Or `npx prisma migrate deploy` if you use Prisma Migrate. If `/interesse` still cannot save after the next production deploy, the table is missing — run the command above, then retry the form. Do not run `npm run db:seed` on production unless you want the Tampa demo hotel there.
 
 Equivalent SQL if you prefer to apply it by hand:
 
