@@ -13,11 +13,11 @@ export function SiteHeader({
   hotelLoginLabel: string;
 }) {
   return (
-    <header className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-5 py-5">
-      <Link href="/" className="min-w-0">
+    <header className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-x-3 gap-y-2 px-5 py-5">
+      <Link href="/" className="shrink-0">
         <Logo wordmarkText="Travel Gratuity Group" />
       </Link>
-      <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+      <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
         <LanguageSwitcher locale={locale} label={languageLabel} />
         <Link
           href="/login"

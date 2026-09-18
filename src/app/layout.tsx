@@ -23,7 +23,9 @@ export const metadata: Metadata = {
   description:
     "Cashless tipping for hotel staff and tour guides. Guests scan a QR with their phone camera. No guest app, no guest account, no login.",
   icons: {
-    icon: "/favicon.svg",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
   },
 };
 
