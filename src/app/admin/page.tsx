@@ -74,14 +74,22 @@ export default async function AdminPage({
           <Link href="/">
             <Logo />
           </Link>
-          <form action={logoutAction}>
-            <button
-              type="submit"
+          <div className="flex items-center gap-4">
+            <Link
+              href="/admin/leads"
               className="text-sm font-semibold text-teal hover:text-teal-deep"
             >
-              Log out
-            </button>
-          </form>
+              Interest leads
+            </Link>
+            <form action={logoutAction}>
+              <button
+                type="submit"
+                className="text-sm font-semibold text-teal hover:text-teal-deep"
+              >
+                Log out
+              </button>
+            </form>
+          </div>
         </div>
       </header>
 

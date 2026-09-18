@@ -9,9 +9,9 @@ export const metadata = {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; next?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, next } = await searchParams;
 
   return (
     <div className="flex min-h-full flex-col">
@@ -38,6 +38,9 @@ export default async function LoginPage({
           </p>
         ) : null}
         <form action={loginAction} className="mt-8 space-y-4">
+          {next?.startsWith("/admin") ? (
+            <input type="hidden" name="next" value={next} />
+          ) : null}
           <label className="block">
             <span className="text-sm font-semibold">Email</span>
             <input

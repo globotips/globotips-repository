@@ -2,10 +2,12 @@ export function Logo({
   className = "",
   markClassName = "h-8 w-8",
   wordmark = true,
+  wordmarkText = "GloboTips",
 }: {
   className?: string;
   markClassName?: string;
   wordmark?: boolean;
+  wordmarkText?: string;
 }) {
   return (
     <span className={`inline-flex items-center gap-2 ${className}`}>
@@ -40,8 +42,8 @@ export function Logo({
         />
       </svg>
       {wordmark ? (
-        <span className="font-display text-xl tracking-tight text-ink">
-          GloboTips
+        <span className="font-display text-lg tracking-tight text-ink sm:text-xl">
+          {wordmarkText}
         </span>
       ) : null}
     </span>
